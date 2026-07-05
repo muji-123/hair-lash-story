@@ -43,10 +43,10 @@ const emptySalon = (type="hair") => ({ id: Date.now(), type, name:"", phone:"", 
 const CLOUD_OK = false;
 
 const load = (key, def) => {
-  try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : def; } catch { return def; }
+  try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : def; } catch(e) { return def; }
 };
 const save = (key, val) => {
-  try { localStorage.setItem(key, JSON.stringify(val)); } catch {}
+  try { localStorage.setItem(key, JSON.stringify(val)); } catch(e) {}
 };
 const cloudLoad = async (key) => {
   if (!CLOUD_OK) return null;
@@ -59,12 +59,12 @@ const cloudSave = async (key, val) => {
     if (key === "hair" || key === "lash") {
       await window.storage.set(key, JSON.stringify(val.map(r => ({ ...r, photo:"" }))));
       for (const r of val) {
-        if (r.photo) { try { await window.storage.set("photo_" + r.id, r.photo); } catch {} }
+        if (r.photo) { try { await window.storage.set("photo_" + r.id, r.photo); } catch(e) {} }
       }
     } else {
       await window.storage.set(key, JSON.stringify(val));
     }
-  } catch {}
+  } catch(e) {}
 };
 const cloudLoadPhotos = async (records) => {
   if (!CLOUD_OK) return records;
@@ -136,7 +136,7 @@ const PhotoUpload = ({ value, onChange }) => {
     try {
       const compressed = await compressImage(f, 1200, 0.75);
       onChange(compressed);
-    } catch {
+    } catch(e) {
       const reader = new FileReader();
       reader.onload = ev => onChange(ev.target.result);
       reader.readAsDataURL(f);
@@ -1298,7 +1298,7 @@ function App() {
         if (cr) { setReminders(cr); save("reminders", cr); }
         if (cs) { setSalons(cs); save("salons", cs); }
         setSyncStatus("ok");
-      } catch { setSyncStatus("error"); }
+      } catch(e) { setSyncStatus("error"); }
     })();
   }, []);
 
