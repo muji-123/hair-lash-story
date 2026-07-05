@@ -5,21 +5,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
   <meta name="theme-color" content="#c0845a"/>
   <meta name="apple-mobile-web-app-capable" content="yes"/>
-  <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
   <meta name="apple-mobile-web-app-title" content="Hair &amp; Lash Story"/>
   <title>Hair &amp; Lash Story</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💇🏻</text></svg>"/>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { background: #fdf6f0; font-family: 'Noto Sans TC', 'PingFang TC', sans-serif; }
+    body { background: #fdf6f0; font-family: 'Noto Sans TC','PingFang TC',sans-serif; }
     #root { min-height: 100vh; }
     #loading {
       position: fixed; inset: 0; background: #fdf6f0;
       display: flex; flex-direction: column;
       align-items: center; justify-content: center; gap: 14px; z-index: 9999;
+      transition: opacity 0.3s;
     }
     .lic { font-size: 52px; animation: bounce 0.8s infinite alternate; }
-    .lit { font-size: 15px; color: #b09080; font-weight: 600; letter-spacing: 1px; }
+    .lit { font-size: 15px; color: #b09080; font-weight: 600; }
     @keyframes bounce { from { transform: translateY(0); } to { transform: translateY(-10px); } }
   </style>
 </head>
@@ -30,11 +29,26 @@
   </div>
   <div id="root"></div>
 
-  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/recharts@2.12.7/umd/Recharts.js"></script>
-
   <script>
+
+// Shim: map CDN globals to what compiled code uses
+var Recharts = window.Recharts || {};
+var BarChart = Recharts.BarChart;
+var Bar = Recharts.Bar;
+var XAxis = Recharts.XAxis;
+var YAxis = Recharts.YAxis;
+var Tooltip = Recharts.Tooltip;
+var ResponsiveContainer = Recharts.ResponsiveContainer;
+var CartesianGrid = Recharts.CartesianGrid;
+var LineChart = Recharts.LineChart;
+var Line = Recharts.Line;
+var useState = React.useState;
+var useEffect = React.useEffect;
+var useMemo = React.useMemo;
+var useRef = React.useRef;
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 function _toConsumableArray(r) { return _arrayWithoutHoles(r) || _iterableToArray(r) || _unsupportedIterableToArray(r) || _nonIterableSpread(); }
 function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
@@ -3907,16 +3921,15 @@ function App() {
 window.App = App;
 
   </script>
-
   <script>
-    (function mount() {
-      if (typeof window.App !== 'undefined' && typeof ReactDOM !== 'undefined') {
-        ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(window.App));
-        document.getElementById('loading').style.display = 'none';
-      } else {
-        setTimeout(mount, 80);
-      }
-    })();
+    try {
+      var root = ReactDOM.createRoot(document.getElementById('root'));
+      root.render(React.createElement(window.App));
+      document.getElementById('loading').style.display = 'none';
+    } catch(err) {
+      document.querySelector('.lit').textContent = 'Error: ' + err.message;
+      console.error(err);
+    }
   </script>
 </body>
 </html>
