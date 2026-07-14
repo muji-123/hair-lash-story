@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8"/>
+  <title>Test</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; background: #fdf6f0; }
+    .step { margin: 10px 0; padding: 10px; border-radius: 8px; }
+    .ok { background: #d4edda; color: #155724; }
+    .err { background: #f8d7da; color: #721c24; }
+  </style>
+</head>
+<body>
+  <h2>載入診斷</h2>
+  <div id="s1" class="step">⏳ 頁面載入中...</div>
+  <div id="s2" class="step">⏳ React 載入中...</div>
+  <div id="s3" class="step">⏳ Recharts 載入中...</div>
+  <div id="s4" class="step">⏳ App.js 載入中...</div>
+  <div id="s5" class="step">⏳ 啟動中...</div>
+  <div id="root"></div>
+
+  <script>
+    document.getElementById('s1').className='step ok';
+    document.getElementById('s1').textContent='✅ 頁面載入成功';
+  </script>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"
+    onload="document.getElementById('s2').className='step ok';document.getElementById('s2').textContent='✅ React 載入成功'"
+    onerror="document.getElementById('s2').className='step err';document.getElementById('s2').textContent='❌ React 載入失敗'">
+  </script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/recharts@2.12.7/umd/Recharts.js"
+    onload="document.getElementById('s3').className='step ok';document.getElementById('s3').textContent='✅ Recharts 載入成功'"
+    onerror="document.getElementById('s3').className='step err';document.getElementById('s3').textContent='❌ Recharts 載入失敗'">
+  </script>
+  <script src="app.js"
+    onload="document.getElementById('s4').className='step ok';document.getElementById('s4').textContent='✅ App.js 載入成功：App='+typeof window.App"
+    onerror="document.getElementById('s4').className='step err';document.getElementById('s4').textContent='❌ App.js 載入失敗'">
+  </script>
+  <script>
+    window.addEventListener('load', function() {
+      try {
+        if (typeof window.App === 'undefined') throw new Error('App 未定義');
+        ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(window.App));
+        document.getElementById('s5').className='step ok';
+        document.getElementById('s5').textContent='✅ App 啟動成功！';
+      } catch(e) {
+        document.getElementById('s5').className='step err';
+        document.getElementById('s5').textContent='❌ 啟動失敗: '+e.message;
+      }
+    });
+  </script>
+</body>
+</html>
