@@ -33,27 +33,25 @@
   </div>
   <div id="root"></div>
 
-  <!-- React 17 (broader iOS compatibility) -->
-  <script src="https://unpkg.com/react@17/umd/react.production.min.js"></script>
-  <script src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js"></script>
-  <script src="https://unpkg.com/recharts@2.1.16/umd/Recharts.js"></script>
+  <!-- cdnjs — iOS Safari 相容 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/17.0.2/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/17.0.2/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/recharts/2.1.16/Recharts.js"></script>
   <script src="app.js"></script>
   <script>
     try {
-      // React 17 legacy render — works on all iOS Safari versions
       ReactDOM.render(
         React.createElement(window.App),
         document.getElementById('root'),
         function() {
-          // Callback fires after render completes
-          var loading = document.getElementById('loading');
-          if (loading) loading.style.display = 'none';
+          var l = document.getElementById('loading');
+          if (l) l.style.display = 'none';
         }
       );
     } catch(err) {
       var lit = document.querySelector('.lit');
       if (lit) lit.textContent = 'Error: ' + err.message;
-      console.error('Mount error:', err);
+      console.error(err);
     }
   </script>
 </body>
