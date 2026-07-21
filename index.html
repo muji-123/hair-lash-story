@@ -24,24 +24,12 @@
 <body>
   <div id="loading"><div class="lic">&#x1F487;&#x1F3FB;&#x200D;&#x2640;&#xFE0F;</div><div class="lit">Hair &amp; Lash Story</div></div>
   <div id="root"></div>
-
   <script crossorigin="anonymous" src="https://cdnjs.cloudflare.com/ajax/libs/react/17.0.2/umd/react.production.min.js"></script>
   <script crossorigin="anonymous" src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/17.0.2/umd/react-dom.production.min.js"></script>
-  <script crossorigin="anonymous" src="https://cdnjs.cloudflare.com/ajax/libs/recharts/2.1.16/Recharts.js"></script>
-
   <script>
 "use strict";
 
 var Recharts = window.Recharts || {};
-var BarChart = Recharts.BarChart,
-  Bar = Recharts.Bar,
-  XAxis = Recharts.XAxis,
-  YAxis = Recharts.YAxis;
-var Tooltip = Recharts.Tooltip,
-  ResponsiveContainer = Recharts.ResponsiveContainer,
-  CartesianGrid = Recharts.CartesianGrid;
-var LineChart = Recharts.LineChart,
-  Line = Recharts.Line;
 var useState = React.useState,
   useEffect = React.useEffect,
   useMemo = React.useMemo,
@@ -1081,86 +1069,190 @@ function DonutChart({
   }
 }
 
+// ── Simple SVG Bar Chart (no Recharts, iOS safe) ─────────────────────────────
+function BarChartSVG({
+  data,
+  height
+}) {
+  if (!data || data.length === 0) return null;
+  const maxVal = Math.max(...data.map(d => (d.hair || 0) + (d.lash || 0)), 1);
+  const w = 320,
+    h = height || 160,
+    pad = {
+      top: 10,
+      bottom: 24,
+      left: 8,
+      right: 8
+    };
+  const barW = Math.floor((w - pad.left - pad.right) / data.length * 0.7);
+  const gap = Math.floor((w - pad.left - pad.right) / data.length);
+  return /*#__PURE__*/React.createElement("svg", {
+    width: "100%",
+    viewBox: "0 0 " + w + " " + h,
+    style: {
+      overflow: "visible"
+    }
+  }, data.map((d, i) => {
+    const total = (d.hair || 0) + (d.lash || 0);
+    const x = pad.left + i * gap + (gap - barW) / 2;
+    const maxH = h - pad.top - pad.bottom;
+    const hairH = total > 0 ? Math.round((d.hair || 0) / maxVal * maxH) : 0;
+    const lashH = total > 0 ? Math.round((d.lash || 0) / maxVal * maxH) : 0;
+    const totalH = hairH + lashH;
+    return /*#__PURE__*/React.createElement("g", {
+      key: i
+    }, lashH > 0 && /*#__PURE__*/React.createElement("rect", {
+      x: x,
+      y: h - pad.bottom - totalH,
+      width: barW,
+      height: lashH,
+      fill: "#d4a0c0",
+      rx: 2
+    }), hairH > 0 && /*#__PURE__*/React.createElement("rect", {
+      x: x,
+      y: h - pad.bottom - totalH + lashH,
+      width: barW,
+      height: hairH,
+      fill: C.primary,
+      rx: 2
+    }), /*#__PURE__*/React.createElement("text", {
+      x: x + barW / 2,
+      y: h - 6,
+      textAnchor: "middle",
+      fontSize: 9,
+      fill: C.textLight
+    }, d.month || d.year));
+  }), /*#__PURE__*/React.createElement("g", {
+    transform: "translate(" + (w / 2 - 60) + "," + (h - 2) + ")"
+  }, /*#__PURE__*/React.createElement("rect", {
+    width: 8,
+    height: 8,
+    fill: C.primary,
+    rx: 2
+  }), /*#__PURE__*/React.createElement("text", {
+    x: 11,
+    y: 8,
+    fontSize: 9,
+    fill: C.textLight
+  }, "剪髮"), /*#__PURE__*/React.createElement("rect", {
+    x: 40,
+    width: 8,
+    height: 8,
+    fill: "#d4a0c0",
+    rx: 2
+  }), /*#__PURE__*/React.createElement("text", {
+    x: 51,
+    y: 8,
+    fontSize: 9,
+    fill: C.textLight
+  }, "美睫")));
+}
+
+// ── Error Boundary ────────────────────────────────────────────────────────────
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      hasError: false,
+      error: null
+    };
+  }
+  static getDerivedStateFromError(error) {
+    return {
+      hasError: true,
+      error
+    };
+  }
+  render() {
+    if (this.state.hasError) {
+      var _this$state$error;
+      return /*#__PURE__*/React.createElement("div", {
+        style: {
+          padding: 20,
+          textAlign: "center",
+          color: C.textFaint
+        }
+      }, /*#__PURE__*/React.createElement("div", {
+        style: {
+          fontSize: 32,
+          marginBottom: 10
+        }
+      }, "⚠️"), /*#__PURE__*/React.createElement("div", {
+        style: {
+          fontSize: 13,
+          marginBottom: 6
+        }
+      }, "頁面發生錯誤"), /*#__PURE__*/React.createElement("div", {
+        style: {
+          fontSize: 11,
+          color: C.red
+        }
+      }, String(((_this$state$error = this.state.error) === null || _this$state$error === void 0 ? void 0 : _this$state$error.message) || "")), /*#__PURE__*/React.createElement("button", {
+        onClick: () => this.setState({
+          hasError: false,
+          error: null
+        }),
+        style: {
+          marginTop: 14,
+          padding: "8px 20px",
+          borderRadius: 12,
+          border: "none",
+          background: C.primary,
+          color: "#fff",
+          fontSize: 13,
+          cursor: "pointer"
+        }
+      }, "重試"));
+    }
+    return this.props.children;
+  }
+}
+
 // ── Stats Tab ─────────────────────────────────────────────────────────────────
 function StatsTab({
   hairRecords,
   lashRecords
 }) {
-  const [costView, setCostView] = useState("ratio");
-  const [chartMode, setChartMode] = useState("monthly"); // "monthly" | "yearly"
-  const [selectedYear, setSelectedYear] = useState(null); // null = current year
-
-  const allRecords = useMemo(() => [...hairRecords, ...lashRecords], [hairRecords, lashRecords]);
-
-  // All years that have data
+  const [chartMode, setChartMode] = useState("monthly");
+  const [selectedYear, setSelectedYear] = useState(null);
   const allYears = useMemo(() => {
-    const ys = new Set(allRecords.map(r => {
-      var _r$date;
-      return (_r$date = r.date) === null || _r$date === void 0 ? void 0 : _r$date.slice(0, 4);
-    }).filter(Boolean));
-    return [...ys].sort((a, b) => b - a); // newest first
-  }, [allRecords]);
+    const ys = new Set([...hairRecords, ...lashRecords].map(r => r.date && r.date.slice(0, 4)).filter(Boolean));
+    return [...ys].sort((a, b) => b - a);
+  }, [hairRecords, lashRecords]);
   const currentYear = String(new Date().getFullYear());
   const activeYear = selectedYear || currentYear;
-
-  // ── Yearly overview chart (one bar per year) ──────────────────────────────
-  const yearlyData = useMemo(() => {
-    return allYears.map(y => ({
-      year: y + "年",
-      hair: hairRecords.filter(r => {
-        var _r$date2;
-        return (_r$date2 = r.date) === null || _r$date2 === void 0 ? void 0 : _r$date2.startsWith(y);
-      }).reduce((s, r) => s + (Number(r.cost) || 0), 0),
-      lash: lashRecords.filter(r => {
-        var _r$date3;
-        return (_r$date3 = r.date) === null || _r$date3 === void 0 ? void 0 : _r$date3.startsWith(y);
-      }).reduce((s, r) => s + (Number(r.cost) || 0), 0)
-    })).reverse(); // chronological
-  }, [allYears, hairRecords, lashRecords]);
-
-  // ── Monthly chart for selected year ──────────────────────────────────────
-  const monthlyData = useMemo(() => {
-    return Array.from({
-      length: 12
-    }, (_, i) => {
-      const m = `${activeYear}-${String(i + 1).padStart(2, "0")}`;
-      return {
-        month: `${i + 1}月`,
-        hair: hairRecords.filter(r => monthKey(r.date) === m).reduce((s, r) => s + (Number(r.cost) || 0), 0),
-        lash: lashRecords.filter(r => monthKey(r.date) === m).reduce((s, r) => s + (Number(r.cost) || 0), 0)
-      };
-    });
-  }, [activeYear, hairRecords, lashRecords]);
-
-  // Year-filtered totals
-  const yearHair = hairRecords.filter(r => {
-    var _r$date4;
-    return (_r$date4 = r.date) === null || _r$date4 === void 0 ? void 0 : _r$date4.startsWith(activeYear);
-  }).reduce((s, r) => s + (Number(r.cost) || 0), 0);
-  const yearLash = lashRecords.filter(r => {
-    var _r$date5;
-    return (_r$date5 = r.date) === null || _r$date5 === void 0 ? void 0 : _r$date5.startsWith(activeYear);
-  }).reduce((s, r) => s + (Number(r.cost) || 0), 0);
+  const yearlyData = useMemo(() => allYears.map(y => ({
+    year: y,
+    hair: hairRecords.filter(r => r.date && r.date.startsWith(y)).reduce((s, r) => s + (Number(r.cost) || 0), 0),
+    lash: lashRecords.filter(r => r.date && r.date.startsWith(y)).reduce((s, r) => s + (Number(r.cost) || 0), 0)
+  })).reverse(), [allYears, hairRecords, lashRecords]);
+  const monthlyData = useMemo(() => Array.from({
+    length: 12
+  }, (_, i) => {
+    const m = activeYear + "-" + String(i + 1).padStart(2, "0");
+    return {
+      month: i + 1 + "月",
+      hair: hairRecords.filter(r => r.date && r.date.startsWith(m)).reduce((s, r) => s + (Number(r.cost) || 0), 0),
+      lash: lashRecords.filter(r => r.date && r.date.startsWith(m)).reduce((s, r) => s + (Number(r.cost) || 0), 0)
+    };
+  }), [activeYear, hairRecords, lashRecords]);
+  const yearHair = hairRecords.filter(r => r.date && r.date.startsWith(activeYear)).reduce((s, r) => s + (Number(r.cost) || 0), 0);
+  const yearLash = lashRecords.filter(r => r.date && r.date.startsWith(activeYear)).reduce((s, r) => s + (Number(r.cost) || 0), 0);
   const totalHair = hairRecords.reduce((s, r) => s + (Number(r.cost) || 0), 0);
   const totalLash = lashRecords.reduce((s, r) => s + (Number(r.cost) || 0), 0);
-
-  // ── Per-item stats for selected year ──────────────────────────────────────
-  const filteredHairForYear = hairRecords.filter(r => {
-    var _r$date6;
-    return (_r$date6 = r.date) === null || _r$date6 === void 0 ? void 0 : _r$date6.startsWith(activeYear);
-  });
+  const filteredHairForYear = hairRecords.filter(r => r.date && r.date.startsWith(activeYear));
   const itemStats = useMemo(() => {
     const map = {};
     filteredHairForYear.forEach(r => {
-      const items = [...(r.selectedItems || []), ...(r.customItems || [])];
-      if (items.length === 0) return;
+      const items = [...(r.selectedItems || []), r.customItems || []].flat();
+      if (!items.length) return;
       const share = (Number(r.cost) || 0) / items.length;
       items.forEach(item => {
         if (!map[item]) map[item] = {
           count: 0,
           cost: 0
         };
-        map[item].count += 1;
+        map[item].count++;
         map[item].cost += share;
       });
     });
@@ -1178,38 +1270,104 @@ function StatsTab({
     style: {
       display: "flex",
       flexDirection: "column",
-      gap: 16
+      gap: 14
     }
-  }, itemStats.length > 0 && /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 10
+    }
+  }, [{
+    label: "💇🏻‍♀️ 剪髮累計",
+    value: totalHair,
+    count: hairRecords.length,
+    color: C.primary
+  }, {
+    label: "💫 美睫累計",
+    value: totalLash,
+    count: lashRecords.length,
+    color: "#c4a0c0"
+  }].map(s => /*#__PURE__*/React.createElement("div", {
+    key: s.label,
+    style: {
+      flex: 1,
+      background: C.card,
+      borderRadius: 16,
+      padding: "13px 14px",
+      border: "1.5px solid " + C.border2
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 10,
+      color: C.textLight,
+      fontWeight: 600,
+      marginBottom: 3
+    }
+  }, s.label), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 18,
+      fontWeight: 900,
+      color: s.color
+    }
+  }, "NT$", s.value.toLocaleString()), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 10,
+      color: C.textFaint,
+      marginTop: 2
+    }
+  }, "共 ", s.count, " 次")))), /*#__PURE__*/React.createElement("div", {
     style: {
       background: C.card,
       borderRadius: 16,
-      padding: 18,
-      border: `1.5px solid ${C.border2}`
+      padding: "13px 16px",
+      border: "1.5px solid " + C.border2,
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center"
+    }
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 10,
+      color: C.textLight,
+      fontWeight: 600,
+      marginBottom: 3
+    }
+  }, "✨ 美麗總預算（歷年合計）"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 20,
+      fontWeight: 900,
+      color: C.text
+    }
+  }, "NT$", (totalHair + totalLash).toLocaleString()))), itemStats.length > 0 && /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: C.card,
+      borderRadius: 16,
+      padding: 16,
+      border: "1.5px solid " + C.border2
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       justifyContent: "space-between",
       alignItems: "center",
-      marginBottom: 14
+      marginBottom: 12
     }
   }, /*#__PURE__*/React.createElement("span", {
     style: {
       fontWeight: 800,
       color: C.textMid,
-      fontSize: 14
+      fontSize: 13
     }
   }, "✂️ ", activeYear, "年 項目花費比例"), allYears.length > 1 && /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
-      gap: 5
+      gap: 4
     }
   }, allYears.map(y => /*#__PURE__*/React.createElement("button", {
     key: y,
     onClick: () => setSelectedYear(y),
     style: {
-      padding: "3px 8px",
+      padding: "3px 7px",
       borderRadius: 8,
       fontSize: 10,
       fontWeight: 700,
@@ -1221,9 +1379,9 @@ function StatsTab({
   }, y)))), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
-      gap: 16,
+      gap: 14,
       alignItems: "center",
-      marginBottom: 14
+      marginBottom: 12
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
@@ -1237,109 +1395,98 @@ function StatsTab({
       flex: 1,
       display: "flex",
       flexDirection: "column",
-      gap: 5
+      gap: 4
     }
   }, itemStats.slice(0, 6).map((d, i) => /*#__PURE__*/React.createElement("div", {
     key: d.name,
     style: {
       display: "flex",
       alignItems: "center",
-      gap: 6
+      gap: 5
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      width: 9,
-      height: 9,
-      borderRadius: 3,
+      width: 8,
+      height: 8,
+      borderRadius: 2,
       background: PALETTE[i % PALETTE.length],
       flexShrink: 0
     }
   }), /*#__PURE__*/React.createElement("span", {
     style: {
-      fontSize: 11,
+      fontSize: 10,
       color: C.text,
-      flex: 1,
-      lineHeight: 1.3
+      flex: 1
     }
   }, d.name), /*#__PURE__*/React.createElement("span", {
     style: {
-      fontSize: 11,
-      fontWeight: 700,
-      color: C.textMid,
-      flexShrink: 0
-    }
-  }, totalItemCost > 0 ? Math.round(d.value / totalItemCost * 100) : 0, "%"))), itemStats.length > 6 && /*#__PURE__*/React.createElement("span", {
-    style: {
       fontSize: 10,
-      color: C.textFaint
+      fontWeight: 700,
+      color: C.textMid
     }
-  }, "…等共", itemStats.length, "項"))), /*#__PURE__*/React.createElement("div", {
+  }, totalItemCost > 0 ? Math.round(d.value / totalItemCost * 100) : 0, "%"))))), /*#__PURE__*/React.createElement("div", {
     style: {
-      borderTop: `1px solid ${C.border2}`,
-      paddingTop: 10
+      borderTop: "1px solid " + C.border2,
+      paddingTop: 8
     }
   }, itemStats.map((d, i) => {
     const pct = totalItemCost > 0 ? Math.round(d.value / totalItemCost * 100) : 0;
     return /*#__PURE__*/React.createElement("div", {
       key: d.name,
       style: {
-        padding: "7px 0",
-        borderBottom: i < itemStats.length - 1 ? `1px solid ${C.border2}` : "none"
+        padding: "6px 0",
+        borderBottom: i < itemStats.length - 1 ? "1px solid " + C.border2 : "none"
       }
     }, /*#__PURE__*/React.createElement("div", {
       style: {
         display: "flex",
         justifyContent: "space-between",
-        alignItems: "center",
-        marginBottom: 4
+        marginBottom: 3
       }
     }, /*#__PURE__*/React.createElement("div", {
       style: {
         display: "flex",
         alignItems: "center",
-        gap: 6
+        gap: 5
       }
     }, /*#__PURE__*/React.createElement("div", {
       style: {
-        width: 7,
-        height: 7,
+        width: 6,
+        height: 6,
         borderRadius: 2,
-        background: PALETTE[i % PALETTE.length],
-        flexShrink: 0
+        background: PALETTE[i % PALETTE.length]
       }
     }), /*#__PURE__*/React.createElement("span", {
       style: {
-        fontSize: 12,
+        fontSize: 11,
         color: C.text
       }
     }, d.name)), /*#__PURE__*/React.createElement("div", {
       style: {
         display: "flex",
-        gap: 8,
+        gap: 6,
         alignItems: "center"
       }
     }, /*#__PURE__*/React.createElement("span", {
       style: {
-        fontSize: 11,
+        fontSize: 10,
         color: C.textLight
       }
     }, d.count, "次"), /*#__PURE__*/React.createElement("span", {
       style: {
-        fontSize: 12,
+        fontSize: 11,
         fontWeight: 700,
         color: C.textMid
       }
     }, "NT$", d.value.toLocaleString()), /*#__PURE__*/React.createElement("span", {
       style: {
-        fontSize: 11,
+        fontSize: 10,
         fontWeight: 800,
-        color: PALETTE[i % PALETTE.length],
-        minWidth: 28,
-        textAlign: "right"
+        color: PALETTE[i % PALETTE.length]
       }
     }, pct, "%"))), /*#__PURE__*/React.createElement("div", {
       style: {
-        height: 5,
+        height: 4,
         background: "#f0e8e0",
         borderRadius: 4,
         overflow: "hidden"
@@ -1347,45 +1494,39 @@ function StatsTab({
     }, /*#__PURE__*/React.createElement("div", {
       style: {
         height: "100%",
-        width: `${pct}%`,
+        width: pct + "%",
         background: PALETTE[i % PALETTE.length],
-        borderRadius: 4,
-        transition: "width 0.4s"
+        borderRadius: 4
       }
     })));
-  })), /*#__PURE__*/React.createElement("p", {
-    style: {
-      fontSize: 10,
-      color: C.textFaint,
-      margin: "8px 0 0"
-    }
-  }, "＊每筆花費平均分配給該次所有項目")), /*#__PURE__*/React.createElement("div", {
+  }))), /*#__PURE__*/React.createElement("div", {
     style: {
       background: C.card,
       borderRadius: 16,
-      padding: 18,
-      border: `1.5px solid ${C.border2}`
+      padding: 16,
+      border: "1.5px solid " + C.border2
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       justifyContent: "space-between",
       alignItems: "center",
-      marginBottom: 12
+      marginBottom: 10
     }
   }, /*#__PURE__*/React.createElement("span", {
     style: {
       fontWeight: 800,
       color: C.textMid,
-      fontSize: 14
+      fontSize: 13
     }
   }, "📊 花費圖表"), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       gap: 6
     }
-  }, /*#__PURE__*/React.createElement("button", {
-    onClick: () => setChartMode("monthly"),
+  }, [["monthly", "月份"], ["yearly", "年份"]].map(([v, l]) => /*#__PURE__*/React.createElement("button", {
+    key: v,
+    onClick: () => setChartMode(v),
     style: {
       padding: "4px 10px",
       borderRadius: 10,
@@ -1393,35 +1534,23 @@ function StatsTab({
       fontWeight: 700,
       cursor: "pointer",
       border: "none",
-      background: chartMode === "monthly" ? C.primary : "#f0e4d8",
-      color: chartMode === "monthly" ? "#fff" : C.textMid
+      background: chartMode === v ? C.primary : "#f0e4d8",
+      color: chartMode === v ? "#fff" : C.textMid
     }
-  }, "月份"), /*#__PURE__*/React.createElement("button", {
-    onClick: () => setChartMode("yearly"),
-    style: {
-      padding: "4px 10px",
-      borderRadius: 10,
-      fontSize: 11,
-      fontWeight: 700,
-      cursor: "pointer",
-      border: "none",
-      background: chartMode === "yearly" ? C.primary : "#f0e4d8",
-      color: chartMode === "yearly" ? "#fff" : C.textMid
-    }
-  }, "年份"))), chartMode === "monthly" && allYears.length > 1 && /*#__PURE__*/React.createElement("div", {
+  }, l)))), chartMode === "monthly" && allYears.length > 1 && /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
-      gap: 6,
+      gap: 5,
       flexWrap: "wrap",
-      marginBottom: 12
+      marginBottom: 10
     }
   }, allYears.map(y => /*#__PURE__*/React.createElement("button", {
     key: y,
     onClick: () => setSelectedYear(y),
     style: {
-      padding: "4px 12px",
+      padding: "3px 10px",
       borderRadius: 10,
-      fontSize: 12,
+      fontSize: 11,
       fontWeight: 700,
       cursor: "pointer",
       border: "none",
@@ -1431,462 +1560,46 @@ function StatsTab({
   }, y, "年"))), chartMode === "monthly" && /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
-      gap: 8,
+      gap: 7,
       marginBottom: 12
     }
-  }, /*#__PURE__*/React.createElement("div", {
+  }, [{
+    l: "剪髮",
+    v: yearHair,
+    c: C.primary
+  }, {
+    l: "美睫",
+    v: yearLash,
+    c: "#d4a0c0"
+  }, {
+    l: "合計",
+    v: yearHair + yearLash,
+    c: C.text
+  }].map(s => /*#__PURE__*/React.createElement("div", {
+    key: s.l,
     style: {
       flex: 1,
       background: "#fdf6f0",
       borderRadius: 10,
-      padding: "8px 12px",
-      border: `1px solid ${C.border2}`
+      padding: "7px 8px",
+      border: "1px solid " + C.border2
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 10,
-      color: C.textLight,
-      fontWeight: 600
+      fontSize: 9,
+      color: C.textLight
     }
-  }, activeYear, "年 剪髮"), /*#__PURE__*/React.createElement("div", {
+  }, activeYear, " ", s.l), /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: 16,
+      fontSize: 13,
       fontWeight: 800,
-      color: C.textMid
+      color: s.c
     }
-  }, "NT$", yearHair.toLocaleString())), /*#__PURE__*/React.createElement("div", {
-    style: {
-      flex: 1,
-      background: "#fdf6f0",
-      borderRadius: 10,
-      padding: "8px 12px",
-      border: `1px solid ${C.border2}`
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 10,
-      color: C.textLight,
-      fontWeight: 600
-    }
-  }, activeYear, "年 美睫"), /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 16,
-      fontWeight: 800,
-      color: "#d4a0c0"
-    }
-  }, "NT$", yearLash.toLocaleString())), /*#__PURE__*/React.createElement("div", {
-    style: {
-      flex: 1,
-      background: "#fdf6f0",
-      borderRadius: 10,
-      padding: "8px 12px",
-      border: `1px solid ${C.border2}`
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 10,
-      color: C.textLight,
-      fontWeight: 600
-    }
-  }, activeYear, "年 合計"), /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 16,
-      fontWeight: 800,
-      color: C.text
-    }
-  }, "NT$", (yearHair + yearLash).toLocaleString()))), /*#__PURE__*/React.createElement(ResponsiveContainer, {
-    width: "100%",
-    height: 190
-  }, chartMode === "monthly" ? /*#__PURE__*/React.createElement(BarChart, {
-    data: monthlyData,
-    margin: {
-      top: 0,
-      right: 0,
-      left: -20,
-      bottom: 0
-    }
-  }, /*#__PURE__*/React.createElement(CartesianGrid, {
-    strokeDasharray: "3 3",
-    stroke: "#f0e0d0"
-  }), /*#__PURE__*/React.createElement(XAxis, {
-    dataKey: "month",
-    tick: {
-      fontSize: 10,
-      fill: C.textLight
-    }
-  }), /*#__PURE__*/React.createElement(YAxis, {
-    tick: {
-      fontSize: 10,
-      fill: C.textLight
-    }
-  }), /*#__PURE__*/React.createElement(Tooltip, {
-    formatter: v => `NT$${v.toLocaleString()}`,
-    contentStyle: {
-      borderRadius: 10,
-      border: `1px solid ${C.border}`,
-      fontSize: 12
-    }
-  }), /*#__PURE__*/React.createElement(Bar, {
-    dataKey: "hair",
-    name: "剪髮",
-    fill: C.primary,
-    radius: [4, 4, 0, 0]
-  }), /*#__PURE__*/React.createElement(Bar, {
-    dataKey: "lash",
-    name: "美睫",
-    fill: "#d4a0c0",
-    radius: [4, 4, 0, 0]
-  })) : /*#__PURE__*/React.createElement(BarChart, {
-    data: yearlyData,
-    margin: {
-      top: 0,
-      right: 0,
-      left: -20,
-      bottom: 0
-    }
-  }, /*#__PURE__*/React.createElement(CartesianGrid, {
-    strokeDasharray: "3 3",
-    stroke: "#f0e0d0"
-  }), /*#__PURE__*/React.createElement(XAxis, {
-    dataKey: "year",
-    tick: {
-      fontSize: 11,
-      fill: C.textLight
-    }
-  }), /*#__PURE__*/React.createElement(YAxis, {
-    tick: {
-      fontSize: 10,
-      fill: C.textLight
-    }
-  }), /*#__PURE__*/React.createElement(Tooltip, {
-    formatter: v => `NT$${v.toLocaleString()}`,
-    contentStyle: {
-      borderRadius: 10,
-      border: `1px solid ${C.border}`,
-      fontSize: 12
-    }
-  }), /*#__PURE__*/React.createElement(Bar, {
-    dataKey: "hair",
-    name: "剪髮",
-    fill: C.primary,
-    radius: [4, 4, 0, 0]
-  }), /*#__PURE__*/React.createElement(Bar, {
-    dataKey: "lash",
-    name: "美睫",
-    fill: "#d4a0c0",
-    radius: [4, 4, 0, 0]
-  })))), itemStats.length > 0 && /*#__PURE__*/React.createElement("div", {
-    style: {
-      background: C.card,
-      borderRadius: 16,
-      padding: 18,
-      border: `1.5px solid ${C.border2}`
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "center",
-      marginBottom: 14
-    }
-  }, /*#__PURE__*/React.createElement("span", {
-    style: {
-      fontWeight: 800,
-      color: C.textMid,
-      fontSize: 14
-    }
-  }, "✂️ 剪髮項目花費比例"), /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      gap: 6
-    }
-  }, [["ratio", "比例"], ["count", "次數"]].map(([v, l]) => /*#__PURE__*/React.createElement("button", {
-    key: v,
-    onClick: () => setCostView(v),
-    style: {
-      padding: "4px 10px",
-      borderRadius: 10,
-      fontSize: 11,
-      fontWeight: 700,
-      cursor: "pointer",
-      border: "none",
-      background: costView === v ? C.primary : "#f0e4d8",
-      color: costView === v ? "#fff" : C.textMid
-    }
-  }, l)))), allYears.length > 1 && /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 11,
-      color: C.textLight,
-      marginBottom: 10
-    }
-  }, "顯示：", activeYear, "年資料", chartMode === "monthly" && /*#__PURE__*/React.createElement("span", null, "（可切換年份查看）")), /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      gap: 16,
-      alignItems: "center",
-      marginBottom: 16
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      flexShrink: 0
-    }
-  }, /*#__PURE__*/React.createElement(DonutChart, {
-    data: itemStats,
-    total: totalItemCost
-  })), /*#__PURE__*/React.createElement("div", {
-    style: {
-      flex: 1,
-      display: "flex",
-      flexDirection: "column",
-      gap: 6
-    }
-  }, itemStats.slice(0, 6).map((d, i) => /*#__PURE__*/React.createElement("div", {
-    key: d.name,
-    style: {
-      display: "flex",
-      alignItems: "center",
-      gap: 7
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      width: 10,
-      height: 10,
-      borderRadius: 3,
-      background: PALETTE[i % PALETTE.length],
-      flexShrink: 0
-    }
-  }), /*#__PURE__*/React.createElement("span", {
-    style: {
-      fontSize: 11,
-      color: C.text,
-      flex: 1,
-      lineHeight: 1.3
-    }
-  }, d.name), /*#__PURE__*/React.createElement("span", {
-    style: {
-      fontSize: 11,
-      fontWeight: 700,
-      color: C.textMid,
-      flexShrink: 0
-    }
-  }, totalItemCost > 0 ? Math.round(d.value / totalItemCost * 100) : 0, "%"))), itemStats.length > 6 && /*#__PURE__*/React.createElement("span", {
-    style: {
-      fontSize: 11,
-      color: C.textFaint
-    }
-  }, "…等共 ", itemStats.length, " 項"))), /*#__PURE__*/React.createElement("div", {
-    style: {
-      borderTop: `1px solid ${C.border2}`,
-      paddingTop: 12,
-      display: "flex",
-      flexDirection: "column",
-      gap: 0
-    }
-  }, itemStats.map((d, i) => {
-    const pct = totalItemCost > 0 ? Math.round(d.value / totalItemCost * 100) : 0;
-    const barW = costView === "ratio" ? pct : Math.round(d.count / Math.max(...itemStats.map(x => x.count)) * 100);
-    return /*#__PURE__*/React.createElement("div", {
-      key: d.name,
-      style: {
-        padding: "9px 0",
-        borderBottom: i < itemStats.length - 1 ? `1px solid ${C.border2}` : "none"
-      }
-    }, /*#__PURE__*/React.createElement("div", {
-      style: {
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-        marginBottom: 5
-      }
-    }, /*#__PURE__*/React.createElement("div", {
-      style: {
-        display: "flex",
-        alignItems: "center",
-        gap: 7
-      }
-    }, /*#__PURE__*/React.createElement("div", {
-      style: {
-        width: 8,
-        height: 8,
-        borderRadius: 2,
-        background: PALETTE[i % PALETTE.length],
-        flexShrink: 0
-      }
-    }), /*#__PURE__*/React.createElement("span", {
-      style: {
-        fontSize: 13,
-        color: C.text
-      }
-    }, d.name)), /*#__PURE__*/React.createElement("div", {
-      style: {
-        display: "flex",
-        gap: 10,
-        alignItems: "center"
-      }
-    }, /*#__PURE__*/React.createElement("span", {
-      style: {
-        fontSize: 12,
-        color: C.textLight
-      }
-    }, d.count, "次"), /*#__PURE__*/React.createElement("span", {
-      style: {
-        fontSize: 13,
-        fontWeight: 700,
-        color: C.textMid
-      }
-    }, "NT$", d.value.toLocaleString()), /*#__PURE__*/React.createElement("span", {
-      style: {
-        fontSize: 12,
-        fontWeight: 800,
-        color: PALETTE[i % PALETTE.length],
-        minWidth: 32,
-        textAlign: "right"
-      }
-    }, pct, "%"))), /*#__PURE__*/React.createElement("div", {
-      style: {
-        height: 6,
-        background: "#f0e8e0",
-        borderRadius: 4,
-        overflow: "hidden"
-      }
-    }, /*#__PURE__*/React.createElement("div", {
-      style: {
-        height: "100%",
-        width: `${barW}%`,
-        background: PALETTE[i % PALETTE.length],
-        borderRadius: 4,
-        transition: "width 0.4s ease"
-      }
-    })));
-  })), /*#__PURE__*/React.createElement("p", {
-    style: {
-      fontSize: 11,
-      color: C.textFaint,
-      margin: "10px 0 0",
-      lineHeight: 1.5
-    }
-  }, "＊每筆紀錄花費平均分配給該次所有項目計算")));
+  }, "NT$", s.v.toLocaleString())))), /*#__PURE__*/React.createElement(BarChartSVG, {
+    data: chartMode === "monthly" ? monthlyData : yearlyData,
+    height: 160
+  })));
 }
-
-// ── Cycle rules ───────────────────────────────────────────────────────────────
-const CYCLE_RULES = [{
-  key: "bang_trim",
-  icon: "✂️",
-  label: "修瀏海",
-  match: items => items.some(i => i.includes("修瀏海")),
-  minDays: 21,
-  maxDays: 28,
-  hint: "建議每 3–4 週"
-}, {
-  key: "bang_perm",
-  icon: "🌀",
-  label: "燙劉海",
-  match: items => items.some(i => i.includes("燙劉海")),
-  minDays: 84,
-  maxDays: 98,
-  hint: "建議每 3 個月"
-}, {
-  key: "color_touch",
-  icon: "🎨",
-  label: "補染",
-  match: items => items.some(i => i.includes("補染")),
-  minDays: 84,
-  maxDays: 98,
-  hint: "建議每 3 個月"
-}, {
-  key: "color_full",
-  icon: "🌈",
-  label: "整頭染",
-  match: items => items.some(i => i.includes("整頭染")),
-  minDays: 168,
-  maxDays: 196,
-  hint: "建議每 6 個月"
-}, {
-  key: "curl_end",
-  icon: "🌊",
-  label: "髮尾C彎",
-  match: items => items.some(i => i.includes("髮尾C彎")),
-  minDays: 168,
-  maxDays: 196,
-  hint: "建議每 6 個月"
-}, {
-  key: "haircut",
-  icon: "💇",
-  label: "剪髮",
-  match: items => items.some(i => i.includes("剪髮")) && !items.some(i => i.includes("修瀏海") || i.includes("燙劉海") || i.includes("補染") || i.includes("整頭染")),
-  minDays: 120,
-  maxDays: 180,
-  hint: "建議每 4–6 個月"
-}];
-const LASH_CYCLE = {
-  minDays: 45,
-  maxDays: 60,
-  hint: "建議每 1.5–2 個月"
-};
-
-// Find last record date for each cycle key
-function buildSuggestions(hairRecords, lashRecords) {
-  const suggestions = [];
-
-  // Hair: find the most recent record that matches each rule
-  CYCLE_RULES.forEach(rule => {
-    const matched = [...hairRecords].filter(r => rule.match([...(r.selectedItems || []), ...(r.customItems || [])])).sort((a, b) => b.date.localeCompare(a.date));
-    if (matched.length === 0) return;
-    const last = matched[0];
-    const nextMin = addDays(last.date, rule.minDays);
-    const nextMax = addDays(last.date, rule.maxDays);
-    const daysMin = daysFrom(nextMin);
-    const daysMax = daysFrom(nextMax);
-    suggestions.push({
-      ...rule,
-      lastDate: last.date,
-      nextMin,
-      nextMax,
-      daysMin,
-      daysMax
-    });
-  });
-
-  // Lash
-  const lastLash = [...lashRecords].sort((a, b) => b.date.localeCompare(a.date))[0];
-  if (lastLash) {
-    const nextMin = addDays(lastLash.date, LASH_CYCLE.minDays);
-    const nextMax = addDays(lastLash.date, LASH_CYCLE.maxDays);
-    suggestions.push({
-      key: "lash",
-      icon: "💫",
-      label: "美睫",
-      lastDate: lastLash.date,
-      nextMin,
-      nextMax,
-      daysMin: daysFrom(nextMin),
-      daysMax: daysFrom(nextMax),
-      hint: LASH_CYCLE.hint
-    });
-  }
-  return suggestions;
-}
-function urgencyColor(dMin, dMax) {
-  if (dMax < 0) return C.red; // past max → overdue
-  if (dMin <= 0) return "#e8a030"; // past min window → time to go
-  if (dMin <= 7) return "#e8a030"; // within a week
-  return C.green;
-}
-// Format days into "X個月又Y天" style
-function fmtDays(d) {
-  if (d <= 0) return "0 天";
-  if (d < 30) return `${d} 天`;
-  const months = Math.floor(d / 30);
-  const rem = d % 30;
-  if (rem === 0) return `${months} 個月`;
-  return `${months} 個月又 ${rem} 天`;
-}
-function urgencyLabel(dMin, dMax) {
-  if (dMax < 0) return `逾期 ${fmtDays(-dMax)}`;
-  if (dMin <= 0) return "可以去囉！";
-  return `還有 ${fmtDays(dMin)}–${fmtDays(dMax)}`;
-}
-
 // ── Reminders Tab ─────────────────────────────────────────────────────────────
 function RemindersTab({
   reminders,
@@ -2520,8 +2233,8 @@ function CalendarView({
   };
   const monthPrefix = `${viewYear}-${String(viewMonth + 1).padStart(2, "0")}`;
   const monthTotal = [...hairRecords, ...lashRecords].filter(r => {
-    var _r$date7;
-    return (_r$date7 = r.date) === null || _r$date7 === void 0 ? void 0 : _r$date7.startsWith(monthPrefix);
+    var _r$date;
+    return (_r$date = r.date) === null || _r$date === void 0 ? void 0 : _r$date.startsWith(monthPrefix);
   }).reduce((s, r) => s + (Number(r.cost) || 0), 0);
   const selKey = selectedDate ? `${viewYear}-${String(viewMonth + 1).padStart(2, "0")}-${String(selectedDate).padStart(2, "0")}` : null;
   const selRecs = selKey ? dateMap[selKey] || {
@@ -3308,18 +3021,24 @@ function App() {
       salons: salons,
       onDelete: id => setLashRecords(lashRecords.filter(x => x.id !== id))
     })));
-  })()), tab === "stats" && /*#__PURE__*/React.createElement(StatsTab, {
+  })()), tab === "stats" && /*#__PURE__*/React.createElement(ErrorBoundary, {
+    key: "stats"
+  }, /*#__PURE__*/React.createElement(StatsTab, {
     hairRecords: hairRecords,
     lashRecords: lashRecords
-  }), tab === "reminders" && /*#__PURE__*/React.createElement(RemindersTab, {
+  })), tab === "reminders" && /*#__PURE__*/React.createElement(ErrorBoundary, {
+    key: "rem"
+  }, /*#__PURE__*/React.createElement(RemindersTab, {
     reminders: reminders,
     setReminders: setReminders,
     hairRecords: hairRecords,
     lashRecords: lashRecords
-  }), tab === "salons" && /*#__PURE__*/React.createElement(SalonsTab, {
+  })), tab === "salons" && /*#__PURE__*/React.createElement(ErrorBoundary, {
+    key: "sal"
+  }, /*#__PURE__*/React.createElement(SalonsTab, {
     salons: salons,
     setSalons: setSalons
-  })), /*#__PURE__*/React.createElement("div", {
+  }))), /*#__PURE__*/React.createElement("div", {
     style: {
       position: "fixed",
       bottom: 0,
@@ -3408,19 +3127,13 @@ function App() {
 window.App = App;
 
   </script>
-
   <script>
     try {
-      ReactDOM.render(
-        React.createElement(window.App),
-        document.getElementById('root'),
-        function() {
-          var l = document.getElementById('loading');
-          if (l) l.style.display = 'none';
-        }
-      );
+      ReactDOM.render(React.createElement(window.App),document.getElementById('root'),function(){
+        var l=document.getElementById('loading');if(l)l.style.display='none';
+      });
     } catch(e) {
-      document.querySelector('.lit').textContent = 'Error: ' + e.message;
+      document.querySelector('.lit').textContent='Error: '+e.message;
     }
   </script>
 </body>
