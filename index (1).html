@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-title" content="Hair &amp; Lash Story"/>
+<meta name="theme-color" content="#c0845a"/>
+<title>Hair &amp; Lash Story</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{background:#fdf6f0;font-family:'Noto Sans TC','PingFang TC',sans-serif;color:#4a2e1a;max-width:480px;margin:0 auto;min-height:100vh}
+button{font-family:inherit;cursor:pointer}
+input,select,textarea{font-family:inherit}
+
+/* Header */
+.hdr{background:linear-gradient(135deg,#c0845a,#a06040);padding:16px 18px;box-shadow:0 4px 20px rgba(140,70,20,.18)}
+.hdr-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.hdr-title{display:flex;align-items:center;gap:10px}
+.hdr-icon{background:rgba(255,255,255,.2);border-radius:12px;width:38px;height:38px;display:flex;align-items:center;justify-content:center;font-size:20px}
+.hdr-name{color:#fff;font-size:16px;font-weight:900;letter-spacing:.5px}
+.hdr-sub{color:rgba(255,255,255,.6);font-size:10px;margin-top:2px}
+.hdr-btns{display:flex;gap:6px}
+.hdr-btn{background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:12px;width:36px;height:36px;font-size:15px;display:flex;align-items:center;justify-content:center}
+.hdr-pills{display:flex;gap:7px}
+.hdr-pill{flex:1;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.22);border-radius:12px;padding:8px 8px}
+.hdr-pill-label{color:rgba(255,255,255,.7);font-size:9px;font-weight:600;margin-bottom:2px}
+.hdr-pill-val{color:#fff;font-size:13px;font-weight:900}
+.hdr-pill-count{color:rgba(255,255,255,.5);font-size:9px;margin-top:1px}
+
+/* Bottom nav */
+.nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #f0ddd0;display:flex;justify-content:space-around;padding:8px 0 28px;box-shadow:0 -4px 20px rgba(140,80,30,.08);z-index:100;max-width:480px;margin:0 auto}
+.nav-btn{flex:1;border:none;background:none;display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 0;opacity:.4}
+.nav-btn.active{opacity:1}
+.nav-icon{font-size:20px}
+.nav-label{font-size:9px;font-weight:500;color:#b09080}
+.nav-btn.active .nav-label{color:#c0845a;font-weight:800}
+
+/* Content */
+.content{padding:14px 14px 100px}
+.card{background:#fff;border-radius:18px;border:1.5px solid #f0ddd0;box-shadow:0 2px 16px rgba(140,80,30,.07);overflow:hidden;margin-bottom:12px}
+.card-body{padding:14px 16px}
+
+/* Calendar */
+.cal-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.cal-nav{background:none;border:none;font-size:22px;color:#8b6045;padding:2px 8px}
+.cal-title{text-align:center}
+.cal-year-sel,.cal-month-sel{font-size:16px;font-weight:900;color:#4a2e1a;background:none;border:none;padding:0 2px;-webkit-appearance:none}
+.cal-sub{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:2px}
+.cal-today-btn{background:#f5e6d8;border:none;color:#c0845a;border-radius:10px;padding:2px 8px;font-size:10px;font-weight:700}
+.wdays{display:grid;grid-template-columns:repeat(7,1fr);margin-bottom:4px}
+.wday{text-align:center;font-size:11px;font-weight:700;padding:3px 0;color:#b09080}
+.wday.sun{color:#d08080}.wday.sat{color:#7898c0}
+.days{display:grid;grid-template-columns:repeat(7,1fr);gap:3px 2px}
+.day-btn{border:none;border-radius:12px;padding:7px 2px 6px;background:transparent;position:relative}
+.day-btn.today{background:#f5e6d8}
+.day-btn.selected{background:#c0845a}
+.day-num{font-size:15px;text-align:center;color:#4a2e1a}
+.day-btn.today .day-num{color:#c0845a;font-weight:700}
+.day-btn.selected .day-num{color:#fff;font-weight:700}
+.day-btn.sun .day-num{color:#d08080}
+.day-btn.sat .day-num{color:#7898c0}
+.day-btn.selected .day-num{color:#fff}
+.dots{display:flex;justify-content:center;gap:2px;margin-top:3px;height:7px}
+.dot{width:5px;height:5px;border-radius:50%}
+.dot.hair{background:#c0845a}.dot.lash{background:#d4a0c0}
+.day-btn.selected .dot{background:rgba(255,255,255,.8)}
+.legend{display:flex;gap:14px;justify-content:center;margin-top:10px;padding-top:10px;border-top:1px solid #f0ddd0}
+.leg-item{display:flex;align-items:center;gap:4px;font-size:11px;color:#b09080}
+.leg-dot{width:7px;height:7px;border-radius:50%}
+
+/* Tags */
+.tag{display:inline-flex;align-items:center;gap:4px;background:#f5e6d8;color:#8b6045;border-radius:20px;padding:3px 10px;font-size:12px;font-weight:600;margin:2px}
+.tag-lash{background:#fce8f5;color:#a06080}
+
+/* Record card */
+.rec-date{font-size:12px;color:#b09080;font-weight:600;margin-bottom:8px}
+.rec-row{display:flex;justify-content:space-between;align-items:flex-start;padding:8px 0;border-bottom:1px dashed #f0ddd0}
+.rec-row:last-child{border-bottom:none}
+.rec-items{display:flex;flex-wrap:wrap;flex:1}
+.rec-right{display:flex;align-items:center;gap:6px;margin-left:10px;flex-shrink:0}
+.rec-cost{font-size:15px;font-weight:700;color:#8b6045}
+.del-btn{background:none;border:none;color:#c4a898;font-size:17px;line-height:1;padding:0}
+.rec-total{display:flex;justify-content:space-between;align-items:center;background:#fdf6f0;border-top:1.5px solid #f0ddd0;padding:10px 16px}
+.rec-total-label{font-size:12px;color:#b09080;font-weight:600}
+.rec-total-val{font-size:18px;font-weight:900;color:#c0845a}
+
+/* Add buttons */
+.add-btns{display:flex;gap:8px;margin-top:10px}
+.add-btn{flex:1;border:1.5px solid #e8d5c4;border-radius:12px;padding:9px 0;font-size:13px;font-weight:700;color:#8b6045;background:#fff}
+.add-btn.lash{border-color:#e8d0e0;color:#a06080;background:#fdf5fb}
+.fab{position:fixed;bottom:90px;right:18px;width:52px;height:52px;border-radius:50%;border:none;background:linear-gradient(135deg,#c0845a,#a06040);color:#fff;font-size:26px;box-shadow:0 6px 20px rgba(160,96,64,.4);display:flex;align-items:center;justify-content:center;z-index:90}
+
+/* Modal */
+.modal-bg{position:fixed;inset:0;background:rgba(30,18,10,.45);z-index:200;display:flex;align-items:flex-end;justify-content:center}
+.modal{background:#fffaf6;border-radius:24px 24px 0 0;padding:20px 18px 40px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto}
+.modal-title{font-size:16px;font-weight:900;color:#6b3e20;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center}
+.modal-close{background:none;border:none;color:#c4a898;font-size:24px;line-height:1}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:12px;font-weight:700;color:#8b6045;margin-bottom:4px}
+.field input,.field select,.field textarea{width:100%;border:1.5px solid #e8d5c4;border-radius:10px;padding:9px 12px;font-size:14px;background:#fff8f3;color:#4a2e1a;outline:none}
+.field textarea{resize:vertical;min-height:60px}
+.item-grid{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:10px}
+.item-chip{padding:5px 12px;border-radius:20px;font-size:12px;border:2px solid #e8d5c4;background:#fff;color:#9a7560;font-weight:400}
+.item-chip.sel{border-color:#c0845a;background:#f5e6d8;color:#8b6045;font-weight:700}
+.save-btn{width:100%;padding:13px;background:linear-gradient(135deg,#c0845a,#a06040);color:#fff;border:none;border-radius:14px;font-size:15px;font-weight:800;margin-top:8px;box-shadow:0 4px 14px rgba(160,96,64,.28)}
+
+/* Stats */
+.stat-cards{display:flex;gap:10px;margin-bottom:12px}
+.stat-card{flex:1;background:#fff;border-radius:16px;padding:13px 14px;border:1.5px solid #f0ddd0}
+.stat-label{font-size:10px;color:#b09080;font-weight:600;margin-bottom:3px}
+.stat-val{font-size:18px;font-weight:900}
+.stat-sub{font-size:10px;color:#c4a898;margin-top:2px}
+.chart-wrap{background:#fff;border-radius:16px;padding:16px;border:1.5px solid #f0ddd0;margin-bottom:12px}
+.chart-title{font-size:13px;font-weight:800;color:#8b6045;margin-bottom:12px}
+
+/* Reminders */
+.reminder-card{background:#fff;border-radius:16px;padding:14px 16px;border:1.5px solid #f0ddd0;margin-bottom:10px;display:flex;justify-content:space-between;align-items:flex-start}
+.rem-name{font-size:13px;font-weight:700;color:#4a2e1a}
+.rem-sub{font-size:11px;color:#b09080;margin-top:3px}
+.rem-status{font-size:12px;font-weight:700;text-align:right}
+.rem-bar{height:6px;background:#f0e8e0;border-radius:4px;overflow:hidden;margin-top:8px}
+.rem-fill{height:100%;border-radius:4px;transition:width .4s}
+
+/* Salons */
+.salon-card{background:#fff;border-radius:18px;padding:14px 16px;border:1.5px solid #f0ddd0;margin-bottom:10px}
+.salon-name{font-size:15px;font-weight:800;color:#4a2e1a}
+.stars{display:flex;gap:3px;margin:3px 0}
+.star{font-size:18px;color:#ddd}.star.on{color:#e8a030}
+.salon-info{font-size:13px;color:#8b6045;margin-top:5px}
+
+/* Sub-tabs */
+.sub-tabs{display:flex;background:#fff;border-radius:14px;overflow:hidden;border:1.5px solid #f0ddd0;margin-bottom:12px}
+.sub-tab{flex:1;border:none;background:none;padding:11px 8px;font-size:13px;font-weight:500;color:#b09080;border-bottom:3px solid transparent}
+.sub-tab.active{font-weight:800;color:#8b6045;border-bottom-color:#c0845a}
+
+/* Section header */
+.sec-hdr{display:flex;justify-content:flex-end;margin-bottom:10px}
+.add-rec-btn{background:linear-gradient(135deg,#c0845a,#a06040);color:#fff;border:none;border-radius:14px;padding:9px 18px;font-size:13px;font-weight:700;box-shadow:0 4px 14px rgba(160,96,64,.28)}
+
+/* Empty state */
+.empty{text-align:center;color:#c4a898;padding:50px 0}
+.empty-icon{font-size:40px;margin-bottom:10px}
+.empty-text{font-size:14px}
+
+/* Hint */
+.hint{text-align:center;color:#c4a898;padding:20px 0;font-size:13px}
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+// ── Data ─────────────────────────────────────────────────────────────────────
+var HAIR_ITEMS = ["剪髮（含洗）","修瀏海","局部燙（燙劉海）","局部燙（髮尾C彎）","護髮（深層護髮）","護髮（一般護髮）","洗髮","頭皮隔離","染髮（補染）","染髮（整頭染）"];
+var LASH_ITEMS = ["150根","補接"];
+var WEEKDAYS = ["日","一","二","三","四","五","六"];
+var MONTHS = [1,2,3,4,5,6,7,8,9,10,11,12];
+
+function load(k,def){try{var v=localStorage.getItem(k);return v?JSON.parse(v):def;}catch(e){return def;}}
+function save(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+
+var state = {
+  tab: "calendar",
+  hairRecords: load("hair",[]),
+  lashRecords: load("lash",[]),
+  reminders: load("reminders",[]),
+  salons: load("salons",[]),
+  viewYear: new Date().getFullYear(),
+  viewMonth: new Date().getMonth(),
+  selectedDate: null,
+  modal: null, // "hair" | "lash" | "reminder" | "salon"
+  hairDraft: {},
+  lashDraft: {},
+  reminderDraft: {},
+  salonDraft: {},
+  salonTab: "hair",
+  chartMode: "monthly",
+  selectedYear: null,
+};
+
+function setState(patch){
+  Object.assign(state, patch);
+  render();
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function fmtDate(d){
+  if(!d) return "";
+  var dt = new Date(d);
+  return dt.getFullYear()+"/"+(dt.getMonth()+1).toString().padStart(2,"0")+"/"+dt.getDate().toString().padStart(2,"0");
+}
+function todayStr(){return new Date().toISOString().split("T")[0];}
+function addDays(d,n){var dt=new Date(d);dt.setDate(dt.getDate()+n);return dt.toISOString().split("T")[0];}
+function daysFrom(d){return Math.round((new Date(d)-new Date())/86400000);}
+function fmtDays(d){
+  if(d<=0) return "0天";
+  if(d<30) return d+"天";
+  var m=Math.floor(d/30),r=d%30;
+  return r===0?m+"個月":m+"個月又"+r+"天";
+}
+function totalCost(records){return records.reduce(function(s,r){return s+(Number(r.cost)||0);},0);}
+function e(tag,attrs,children){
+  var el=document.createElement(tag);
+  if(attrs) Object.keys(attrs).forEach(function(k){
+    if(k==="style"&&typeof attrs[k]==="object"){Object.assign(el.style,attrs[k]);}
+    else if(k.startsWith("on")){el.addEventListener(k.slice(2).toLowerCase(),attrs[k]);}
+    else if(k==="className"){el.className=attrs[k];}
+    else if(k==="htmlFor"){el.setAttribute("for",attrs[k]);}
+    else{el.setAttribute(k,attrs[k]);}
+  });
+  if(children) [].concat(children).forEach(function(c){
+    if(c==null||c===false) return;
+    if(typeof c==="string"||typeof c==="number") el.appendChild(document.createTextNode(c));
+    else el.appendChild(c);
+  });
+  return el;
+}
+function h(html){var d=document.createElement("div");d.innerHTML=html;return d;}
+
+// ── Calendar helpers ──────────────────────────────────────────────────────────
+function buildDateMap(){
+  var map={};
+  state.hairRecords.forEach(function(r){
+    if(!map[r.date]) map[r.date]={hair:[],lash:[]};
+    map[r.date].hair.push(r);
+  });
+  state.lashRecords.forEach(function(r){
+    if(!map[r.date]) map[r.date]={hair:[],lash:[]};
+    map[r.date].lash.push(r);
+  });
+  return map;
+}
+function calDays(year,month){
+  var first=new Date(year,month,1);
+  var last=new Date(year,month+1,0);
+  var days=[];
+  for(var i=0;i<first.getDay();i++) days.push(null);
+  for(var d=1;d<=last.getDate();d++) days.push(d);
+  return days;
+}
+function selKey(){
+  if(!state.selectedDate) return null;
+  return state.viewYear+"-"+(state.viewMonth+1).toString().padStart(2,"0")+"-"+state.selectedDate.toString().padStart(2,"0");
+}
+
+// ── CYCLE RULES ───────────────────────────────────────────────────────────────
+var CYCLE_RULES=[
+  {key:"bang_trim",icon:"✂️",label:"修瀏海",match:function(items){return items.some(function(i){return i.includes("修瀏海");});},minDays:21,maxDays:28,hint:"建議每3–4週"},
+  {key:"bang_perm",icon:"🌀",label:"燙劉海",match:function(items){return items.some(function(i){return i.includes("燙劉海");});},minDays:84,maxDays:98,hint:"建議每3個月"},
+  {key:"color_touch",icon:"🎨",label:"補染",match:function(items){return items.some(function(i){return i.includes("補染");});},minDays:84,maxDays:98,hint:"建議每3個月"},
+  {key:"color_full",icon:"🌈",label:"整頭染",match:function(items){return items.some(function(i){return i.includes("整頭染");});},minDays:168,maxDays:196,hint:"建議每6個月"},
+  {key:"curl_end",icon:"🌊",label:"髮尾C彎",match:function(items){return items.some(function(i){return i.includes("髮尾C彎");});},minDays:168,maxDays:196,hint:"建議每6個月"},
+  {key:"haircut",icon:"💇",label:"剪髮",match:function(items){return items.some(function(i){return i.includes("剪髮");})&&!items.some(function(i){return i.includes("修瀏海")||i.includes("燙劉海")||i.includes("補染")||i.includes("整頭染");});},minDays:120,maxDays:180,hint:"建議每4–6個月"},
+];
+var LASH_CYCLE={minDays:45,maxDays:60,hint:"建議每1.5–2個月"};
+
+function buildSuggestions(){
+  var suggs=[];
+  CYCLE_RULES.forEach(function(rule){
+    var matched=state.hairRecords.filter(function(r){
+      var items=(r.selectedItems||[]).concat(r.customItems||[]);
+      return rule.match(items);
+    }).sort(function(a,b){return b.date.localeCompare(a.date);});
+    if(!matched.length) return;
+    var last=matched[0];
+    var nextMin=addDays(last.date,rule.minDays);
+    var nextMax=addDays(last.date,rule.maxDays);
+    suggs.push({key:rule.key,icon:rule.icon,label:rule.label,hint:rule.hint,
+      lastDate:last.date,nextMin:nextMin,nextMax:nextMax,
+      daysMin:daysFrom(nextMin),daysMax:daysFrom(nextMax),maxDays:rule.maxDays});
+  });
+  var lastLash=state.lashRecords.sort(function(a,b){return b.date.localeCompare(a.date);})[0];
+  if(lastLash){
+    var nextMin=addDays(lastLash.date,LASH_CYCLE.minDays);
+    var nextMax=addDays(lastLash.date,LASH_CYCLE.maxDays);
+    suggs.push({key:"lash",icon:"💫",label:"美睫",hint:LASH_CYCLE.hint,
+      lastDate:lastLash.date,nextMin:nextMin,nextMax:nextMax,
+      daysMin:daysFrom(nextMin),daysMax:daysFrom(nextMax),maxDays:LASH_CYCLE.maxDays});
+  }
+  return suggs;
+}
+function urgColor(dMin,dMax){return dMax<0?"#d08080":dMin<=7?"#e8a030":"#7daa7d";}
+function urgLabel(dMin,dMax){
+  if(dMax<0) return "逾期"+fmtDays(-dMax);
+  if(dMin<=0) return "可以去囉！";
+  return "還有"+fmtDays(dMin)+"–"+fmtDays(dMax);
+}
+
+// ── RENDER ────────────────────────────────────────────────────────────────────
+function renderHeader(){
+  var hairTotal=totalCost(state.hairRecords);
+  var lashTotal=totalCost(state.lashRecords);
+  var suggs=buildSuggestions();
+  var urgent=suggs.filter(function(s){return s.daysMin<=7;}).length;
+  var pills=[
+    {label:"💇🏻‍♀️ 剪髮",val:hairTotal,count:state.hairRecords.length},
+    {label:"💫 美睫",val:lashTotal,count:state.lashRecords.length},
+    {label:"✨ 合計",val:hairTotal+lashTotal,count:state.hairRecords.length+state.lashRecords.length},
+  ];
+  return e("div",{className:"hdr"},[
+    e("div",{className:"hdr-row"},[
+      e("div",{className:"hdr-title"},[
+        e("div",{className:"hdr-icon"},["💇🏻‍♀️"]),
+        e("div",{},[
+          e("div",{className:"hdr-name"},["Hair & Lash Story"]),
+          e("div",{className:"hdr-sub"},["Hair · Lash · Record"]),
+        ]),
+      ]),
+      e("div",{className:"hdr-btns"},[
+        e("button",{className:"hdr-btn",title:"匯出CSV",onClick:exportCSV},["⬇️"]),
+        urgent>0?e("button",{className:"hdr-btn",style:{background:"rgba(208,128,128,.85)"},
+          onClick:function(){setState({tab:"reminders"});}},["⏰"]):null,
+      ]),
+    ]),
+    e("div",{className:"hdr-pills"},pills.map(function(p){
+      return e("div",{className:"hdr-pill"},[
+        e("div",{className:"hdr-pill-label"},[p.label]),
+        e("div",{className:"hdr-pill-val"},["NT$"+p.val.toLocaleString()]),
+        e("div",{className:"hdr-pill-count"},[p.count+" 筆"]),
+      ]);
+    })),
+  ]);
+}
+
+function renderNav(){
+  var tabs=[
+    {id:"calendar",icon:"📅",label:"月曆"},
+    {id:"hair",icon:"💇🏻‍♀️",label:"剪髮"},
+    {id:"lash",icon:"💫",label:"美睫"},
+    {id:"stats",icon:"📊",label:"統計"},
+    {id:"reminders",icon:"⏰",label:"提醒"},
+    {id:"salons",icon:"⭐",label:"沙龍"},
+  ];
+  return e("div",{className:"nav"},tabs.map(function(t){
+    var btn=e("button",{className:"nav-btn"+(state.tab===t.id?" active":""),onClick:function(){setState({tab:t.id});}},
+      [e("span",{className:"nav-icon"},[t.icon]),e("span",{className:"nav-label"},[t.label])]);
+    return btn;
+  }));
+}
+
+function renderCalendar(){
+  var dateMap=buildDateMap();
+  var todayKey=todayStr();
+  var year=state.viewYear, month=state.viewMonth;
+  var monthPrefix=year+"-"+(month+1).toString().padStart(2,"0");
+  var monthTotal=state.hairRecords.concat(state.lashRecords).filter(function(r){
+    return r.date&&r.date.startsWith(monthPrefix);
+  }).reduce(function(s,r){return s+(Number(r.cost)||0);},0);
+  var sk=selKey();
+  var selRecs=sk?(dateMap[sk]||{hair:[],lash:[]}):null;
+
+  // Year selector
+  var years=[];
+  var curY=new Date().getFullYear();
+  for(var i=curY-5;i<=curY+2;i++) years.push(i);
+
+  var yearSel=e("select",{className:"cal-year-sel",onChange:function(ev){setState({viewYear:parseInt(ev.target.value),selectedDate:null});}},
+    years.map(function(y){
+      var opt=e("option",{value:y},[y+"年"]);
+      if(y===year) opt.selected=true;
+      return opt;
+    }));
+  var monthSel=e("select",{className:"cal-month-sel",onChange:function(ev){setState({viewMonth:parseInt(ev.target.value),selectedDate:null});}},
+    MONTHS.map(function(m){
+      var opt=e("option",{value:m-1},[m+"月"]);
+      if(m-1===month) opt.selected=true;
+      return opt;
+    }));
+
+  var cal=e("div",{className:"card"},[
+    e("div",{className:"card-body"},[
+      e("div",{className:"cal-hdr"},[
+        e("button",{className:"cal-nav",onClick:function(){
+          if(month===0) setState({viewYear:year-1,viewMonth:11,selectedDate:null});
+          else setState({viewMonth:month-1,selectedDate:null});
+        }},["‹"]),
+        e("div",{className:"cal-title"},[
+          e("div",{},[yearSel," ",monthSel]),
+          e("div",{className:"cal-sub"},[
+            e("span",{style:{fontSize:"11px",color:"#b09080"}},["本月 NT$"+monthTotal.toLocaleString()]),
+            e("button",{className:"cal-today-btn",onClick:function(){
+              var n=new Date();
+              setState({viewYear:n.getFullYear(),viewMonth:n.getMonth(),selectedDate:n.getDate()});
+            }},["今天"]),
+          ]),
+        ]),
+        e("button",{className:"cal-nav",onClick:function(){
+          if(month===11) setState({viewYear:year+1,viewMonth:0,selectedDate:null});
+          else setState({viewMonth:month+1,selectedDate:null});
+        }},["›"]),
+      ]),
+      e("div",{className:"wdays"},WEEKDAYS.map(function(w,i){
+        return e("div",{className:"wday"+(i===0?" sun":i===6?" sat":"")},[w]);
+      })),
+      e("div",{className:"days"},calDays(year,month).map(function(d,i){
+        if(!d) return e("div",{});
+        var key=year+"-"+(month+1).toString().padStart(2,"0")+"-"+d.toString().padStart(2,"0");
+        var rec=dateMap[key];
+        var hasHair=rec&&rec.hair.length>0;
+        var hasLash=rec&&rec.lash.length>0;
+        var isToday=key===todayKey;
+        var isSel=d===state.selectedDate;
+        var dow=new Date(key).getDay();
+        var cls="day-btn"+(isSel?" selected":isToday?" today":"")+(dow===0?" sun":dow===6?" sat":"");
+        var btn=e("button",{className:cls,onClick:function(){setState({selectedDate:isSel?null:d});}},
+          [e("div",{className:"day-num"},[d]),
+           e("div",{className:"dots"},[
+             hasHair?e("div",{className:"dot hair"},[]):null,
+             hasLash?e("div",{className:"dot lash"},[]):null,
+           ])]);
+        return btn;
+      })),
+      e("div",{className:"legend"},[
+        e("div",{className:"leg-item"},[e("div",{className:"leg-dot",style:{background:"#c0845a"}},[]),"💇🏻‍♀️ 剪髮"]),
+        e("div",{className:"leg-item"},[e("div",{className:"leg-dot",style:{background:"#d4a0c0"}},[]),"💫 美睫"]),
+      ]),
+    ]),
+  ]);
+
+  // Selected day
+  var selDetail;
+  if(sk && selRecs){
+    var hasSel=selRecs.hair.length>0||selRecs.lash.length>0;
+    if(hasSel){
+      var dayTotal=selRecs.hair.concat(selRecs.lash).reduce(function(s,r){return s+(Number(r.cost)||0);},0);
+      var rows=[];
+      selRecs.hair.forEach(function(r){
+        var items=(r.selectedItems||[]).concat(r.customItems||[]);
+        rows.push(e("div",{className:"rec-row"},[
+          e("div",{className:"rec-items"},items.map(function(it){return e("span",{className:"tag"},[it]);})),
+          e("div",{className:"rec-right"},[
+            e("span",{className:"rec-cost"},["NT$"+Number(r.cost).toLocaleString()]),
+            e("button",{className:"del-btn",onClick:function(){
+              state.hairRecords=state.hairRecords.filter(function(x){return x.id!==r.id;});
+              save("hair",state.hairRecords);
+              setState({});
+            }},["×"]),
+          ]),
+        ]));
+      });
+      selRecs.lash.forEach(function(r){
+        rows.push(e("div",{className:"rec-row"},[
+          e("div",{className:"rec-items"},[e("span",{className:"tag tag-lash"},["💫 "+r.item])]),
+          e("div",{className:"rec-right"},[
+            e("span",{className:"rec-cost"},["NT$"+Number(r.cost).toLocaleString()]),
+            e("button",{className:"del-btn",onClick:function(){
+              state.lashRecords=state.lashRecords.filter(function(x){return x.id!==r.id;});
+              save("lash",state.lashRecords);
+              setState({});
+            }},["×"]),
+          ]),
+        ]));
+      });
+      selDetail=e("div",{className:"card"},[
+        e("div",{className:"card-body"},[
+          e("div",{className:"rec-date"},[fmtDate(sk)]),
+          e("div",{},rows),
+        ]),
+        rows.length>1?e("div",{className:"rec-total"},[
+          e("span",{className:"rec-total-label"},["當日合計"]),
+          e("span",{className:"rec-total-val"},["NT$"+dayTotal.toLocaleString()]),
+        ]):e("div",{className:"rec-total"},[
+          e("span",{},[""]),
+          e("span",{className:"rec-total-val"},["NT$"+dayTotal.toLocaleString()]),
+        ]),
+      ]);
+    } else {
+      selDetail=e("div",{className:"card"},[
+        e("div",{className:"card-body"},[
+          e("div",{style:{color:"#c4a898",fontSize:"13px",marginBottom:"10px",textAlign:"center"}},[fmtDate(sk)+" 還沒有紀錄"]),
+          e("div",{className:"add-btns"},[
+            e("button",{className:"add-btn",onClick:function(){openModal("hair",sk);}},["＋ 新增剪髮"]),
+            e("button",{className:"add-btn lash",onClick:function(){openModal("lash",sk);}},["＋ 新增美睫"]),
+          ]),
+        ]),
+      ]);
+    }
+  } else if(!sk){
+    selDetail=e("div",{className:"hint"},["👆 點選日期查看或新增紀錄"]);
+  }
+
+  return e("div",{},[cal,selDetail||null]);
+}
+
+function renderRecordList(type){
+  var records=type==="hair"?state.hairRecords:state.lashRecords;
+  // group by date
+  var dateOrder=[];
+  var grouped={};
+  var sorted=records.slice().sort(function(a,b){return b.date.localeCompare(a.date);});
+  sorted.forEach(function(r){
+    if(!grouped[r.date]){grouped[r.date]=[];dateOrder.push(r.date);}
+    grouped[r.date].push(r);
+  });
+
+  var cards=dateOrder.map(function(date){
+    var recs=grouped[date];
+    var dayTotal=recs.reduce(function(s,r){return s+(Number(r.cost)||0);},0);
+    var rows=recs.map(function(r){
+      var items=type==="hair"?(r.selectedItems||[]).concat(r.customItems||[]):[r.item];
+      return e("div",{className:"rec-row"},[
+        e("div",{className:"rec-items"},items.map(function(it){return e("span",{className:"tag"+(type==="lash"?" tag-lash":"")},[it]);})),
+        e("div",{className:"rec-right"},[
+          e("span",{className:"rec-cost"},["NT$"+Number(r.cost).toLocaleString()]),
+          e("button",{className:"del-btn",onClick:function(){
+            if(type==="hair"){state.hairRecords=state.hairRecords.filter(function(x){return x.id!==r.id;});save("hair",state.hairRecords);}
+            else{state.lashRecords=state.lashRecords.filter(function(x){return x.id!==r.id;});save("lash",state.lashRecords);}
+            setState({});
+          }},["×"]),
+        ]),
+      ]);
+    });
+    return e("div",{className:"card"},[
+      e("div",{className:"card-body"},[
+        e("div",{className:"rec-date"},[fmtDate(date)]),
+        e("div",{},rows),
+      ]),
+      recs.length>1?e("div",{className:"rec-total"},[
+        e("span",{className:"rec-total-label"},["當日合計"]),
+        e("span",{className:"rec-total-val"},["NT$"+dayTotal.toLocaleString()]),
+      ]):e("div",{className:"rec-total"},[
+        e("span",{},[]),
+        e("span",{className:"rec-total-val"},["NT$"+dayTotal.toLocaleString()]),
+      ]),
+    ]);
+  });
+
+  return e("div",{},[
+    e("div",{className:"sec-hdr"},[
+      e("button",{className:"add-rec-btn",onClick:function(){openModal(type,todayStr());}},["＋ 新增紀錄"]),
+    ]),
+    records.length===0?e("div",{className:"empty"},[e("div",{className:"empty-icon"},[type==="hair"?"💇🏻‍♀️":"💫"]),e("div",{className:"empty-text"},["還沒有紀錄，點擊右上角新增！"])]):
+    e("div",{},cards),
+  ]);
+}
+
+function renderStats(){
+  var hairTotal=totalCost(state.hairRecords);
+  var lashTotal=totalCost(state.lashRecords);
+  var activeYear=state.selectedYear||String(new Date().getFullYear());
+
+  // Item stats
+  var map={};
+  state.hairRecords.filter(function(r){return r.date&&r.date.startsWith(activeYear);}).forEach(function(r){
+    var items=(r.selectedItems||[]).concat(r.customItems||[]);
+    if(!items.length) return;
+    var share=(Number(r.cost)||0)/items.length;
+    items.forEach(function(item){
+      if(!map[item]) map[item]={count:0,cost:0};
+      map[item].count++; map[item].cost+=share;
+    });
+  });
+  var itemStats=Object.keys(map).map(function(name){return {name:name,count:map[name].count,value:Math.round(map[name].cost)};})
+    .sort(function(a,b){return b.value-a.value;});
+  var totalIC=itemStats.reduce(function(s,d){return s+d.value;},0);
+
+  // Monthly data
+  var monthlyData=[];
+  for(var i=0;i<12;i++){
+    var m=activeYear+"-"+(i+1).toString().padStart(2,"0");
+    var hc=state.hairRecords.filter(function(r){return r.date&&r.date.startsWith(m);}).reduce(function(s,r){return s+(Number(r.cost)||0);},0);
+    var lc=state.lashRecords.filter(function(r){return r.date&&r.date.startsWith(m);}).reduce(function(s,r){return s+(Number(r.cost)||0);},0);
+    monthlyData.push({month:(i+1)+"月",hair:hc,lash:lc});
+  }
+
+  // All years
+  var allYears=Array.from(new Set(state.hairRecords.concat(state.lashRecords).map(function(r){return r.date&&r.date.slice(0,4);}).filter(Boolean))).sort().reverse();
+
+  // SVG bar chart
+  function makeSVGChart(data){
+    var maxVal=Math.max.apply(null,data.map(function(d){return (d.hair||0)+(d.lash||0);}));
+    if(maxVal===0) maxVal=1;
+    var w=340,h=130,padB=20,padT=8,padL=8,padR=8;
+    var n=data.length;
+    var gw=(w-padL-padR)/n;
+    var bw=Math.floor(gw*0.65);
+    var svgParts=['<svg width="100%" viewBox="0 0 '+w+' '+h+'" style="overflow:visible">'];
+    data.forEach(function(d,i){
+      var total=(d.hair||0)+(d.lash||0);
+      var x=padL+i*gw+(gw-bw)/2;
+      var maxH=h-padT-padB;
+      var hairH=Math.round((d.hair||0)/maxVal*maxH);
+      var lashH=Math.round((d.lash||0)/maxVal*maxH);
+      var totalH=hairH+lashH;
+      if(lashH>0) svgParts.push('<rect x="'+x+'" y="'+(h-padB-totalH)+'" width="'+bw+'" height="'+lashH+'" fill="#d4a0c0" rx="2"/>');
+      if(hairH>0) svgParts.push('<rect x="'+x+'" y="'+(h-padB-totalH+lashH)+'" width="'+bw+'" height="'+hairH+'" fill="#c0845a" rx="2"/>');
+      svgParts.push('<text x="'+(x+bw/2)+'" y="'+(h-5)+'" text-anchor="middle" font-size="9" fill="#b09080">'+(d.month||d.year||"")+'</text>');
+    });
+    svgParts.push('</svg>');
+    var wrap=document.createElement("div");
+    wrap.style.overflowX="auto";
+    wrap.innerHTML=svgParts.join("");
+    return wrap;
+  }
+
+  var elements=[
+    // Totals
+    e("div",{className:"stat-cards"},[
+      e("div",{className:"stat-card"},[e("div",{className:"stat-label"},["💇🏻‍♀️ 剪髮累計"]),e("div",{className:"stat-val",style:{color:"#c0845a"}},["NT$"+hairTotal.toLocaleString()]),e("div",{className:"stat-sub"},["共 "+state.hairRecords.length+" 次"])]),
+      e("div",{className:"stat-card"},[e("div",{className:"stat-label"},["💫 美睫累計"]),e("div",{className:"stat-val",style:{color:"#c4a0c0"}},["NT$"+lashTotal.toLocaleString()]),e("div",{className:"stat-sub"},["共 "+state.lashRecords.length+" 次"])]),
+    ]),
+    e("div",{className:"stat-card",style:{marginBottom:"12px"}},[
+      e("div",{className:"stat-label"},["✨ 美麗總預算（歷年合計）"]),
+      e("div",{className:"stat-val"},["NT$"+(hairTotal+lashTotal).toLocaleString()]),
+    ]),
+  ];
+
+  // Item ratio
+  if(itemStats.length>0){
+    var PALETTE=["#c0845a","#d4a0c0","#7daa7d","#a0b8d4","#d4b87a","#b07088","#88a870","#7898c0","#c09858","#a888b0"];
+    var rows=itemStats.map(function(d,i){
+      var pct=totalIC>0?Math.round(d.value/totalIC*100):0;
+      return e("div",{style:{padding:"8px 0",borderBottom:i<itemStats.length-1?"1px solid #f0ddd0":"none"}},[
+        e("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"4px"}},[
+          e("div",{style:{display:"flex",alignItems:"center",gap:"6px"}},[
+            e("div",{style:{width:"8px",height:"8px",borderRadius:"2px",background:PALETTE[i%10],flexShrink:"0"}},[]),
+            e("span",{style:{fontSize:"12px"}},[ d.name]),
+          ]),
+          e("div",{style:{display:"flex",gap:"8px",alignItems:"center"}},[
+            e("span",{style:{fontSize:"11px",color:"#b09080"}},[d.count+"次"]),
+            e("span",{style:{fontSize:"12px",fontWeight:"700",color:"#8b6045"}},["NT$"+d.value.toLocaleString()]),
+            e("span",{style:{fontSize:"11px",fontWeight:"800",color:PALETTE[i%10]}},[pct+"%"]),
+          ]),
+        ]),
+        e("div",{style:{height:"5px",background:"#f0e8e0",borderRadius:"4px",overflow:"hidden"}},[
+          e("div",{style:{height:"100%",width:pct+"%",background:PALETTE[i%10],borderRadius:"4px"}},[]),
+        ]),
+      ]);
+    });
+    var yearBtns=allYears.length>1?e("div",{style:{display:"flex",gap:"5px",flexWrap:"wrap",marginBottom:"10px"}},allYears.map(function(y){
+      var btn=e("button",{style:{padding:"3px 10px",borderRadius:"10px",fontSize:"11px",fontWeight:"700",border:"none",
+        background:activeYear===y?"#c0845a":"#f0e4d8",color:activeYear===y?"#fff":"#8b6045"},
+        onClick:function(){setState({selectedYear:y});}
+      },[y+"年"]);
+      return btn;
+    })):null;
+    elements.push(e("div",{className:"chart-wrap"},[
+      yearBtns,
+      e("div",{className:"chart-title"},["✂️ "+activeYear+"年 項目花費比例"]),
+      e("div",{},rows),
+      e("p",{style:{fontSize:"10px",color:"#c4a898",marginTop:"8px"}},["＊每筆花費平均分配給該次所有項目"]),
+    ]));
+  }
+
+  // Bar chart
+  var chartEl=e("div",{className:"chart-wrap"},[
+    e("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"10px"}},[
+      e("span",{className:"chart-title"},["📊 花費圖表"]),
+    ]),
+    makeSVGChart(monthlyData),
+  ]);
+  elements.push(chartEl);
+
+  return e("div",{},elements);
+}
+
+function renderReminders(){
+  var suggs=buildSuggestions();
+  var els=[];
+
+  if(suggs.length>0){
+    var rows=suggs.map(function(s,i){
+      var uc=urgColor(s.daysMin,s.daysMax);
+      var ul=urgLabel(s.daysMin,s.daysMax);
+      var totalW=s.maxDays;
+      var elapsed=totalW-Math.max(s.daysMax,0);
+      var pct=Math.min(100,Math.max(0,Math.round(elapsed/totalW*100)));
+      var barColor=s.daysMax<0?"#d08080":s.daysMin<=0?"#e8a030":s.daysMin<=14?"#e8a030":"#7daa7d";
+      return e("div",{style:{padding:"10px 0",borderBottom:i<suggs.length-1?"1px solid #f0ddd0":"none"}},[
+        e("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:"6px"}},[
+          e("div",{},[
+            e("div",{style:{fontSize:"13px",fontWeight:"700",color:"#4a2e1a"}},[s.icon+" "+s.label]),
+            e("div",{style:{fontSize:"11px",color:"#b09080",marginTop:"2px"}},["上次："+fmtDate(s.lastDate)+"　"+s.hint]),
+            e("div",{style:{fontSize:"11px",color:"#b09080"}},["建議："+fmtDate(s.nextMin)+" – "+fmtDate(s.nextMax)]),
+          ]),
+          e("span",{style:{fontSize:"12px",fontWeight:"800",color:uc,textAlign:"right",marginLeft:"8px",flexShrink:"0"}},[ul]),
+        ]),
+        e("div",{style:{height:"6px",background:"#f0e8e0",borderRadius:"4px",overflow:"hidden"}},[
+          pct>0?e("div",{style:{height:"100%",width:pct+"%",background:barColor,borderRadius:"4px"}},[]):null,
+        ]),
+      ]);
+    });
+    els.push(e("div",{className:"card"},[e("div",{className:"card-body"},[
+      e("div",{style:{fontWeight:"800",color:"#8b6045",fontSize:"13px",marginBottom:"10px"}},["💡 智慧建議"]),
+      e("div",{},rows),
+    ])]));
+  }
+
+  // Manual reminders
+  els.push(e("div",{className:"sec-hdr"},[
+    e("button",{className:"add-rec-btn",onClick:function(){openModal("reminder",null);}},["＋ 自訂提醒"]),
+  ]));
+
+  if(state.reminders.length>0){
+    state.reminders.forEach(function(r){
+      var days=daysFrom(r.date);
+      var uc=days<0?"#d08080":days<=3?"#e8a030":"#7daa7d";
+      var ul=days<0?"已過期"+fmtDays(-days):days===0?"今天！":"還有"+fmtDays(days);
+      els.push(e("div",{className:"reminder-card"},[
+        e("div",{},[
+          e("div",{className:"rem-name"},[r.label||"提醒"]),
+          e("div",{className:"rem-sub"},[r.type==="hair"?"✂️ 剪髮":"💫 美睫"," · ",fmtDate(r.date)]),
+        ]),
+        e("div",{style:{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:"6px"}},[
+          e("span",{className:"rem-status",style:{color:uc}},[ul]),
+          e("button",{style:{background:"none",border:"none",color:"#c4a898",fontSize:"18px"},onClick:function(){
+            state.reminders=state.reminders.filter(function(x){return x.id!==r.id;});
+            save("reminders",state.reminders);setState({});
+          }},["×"]),
+        ]),
+      ]));
+    });
+  }
+
+  if(suggs.length===0&&state.reminders.length===0){
+    els.push(e("div",{className:"empty"},[e("div",{className:"empty-icon"},["⏰"]),e("div",{className:"empty-text"},["新增幾筆紀錄後會自動顯示建議"])]));
+  }
+
+  return e("div",{},els);
+}
+
+function renderSalons(){
+  var hairSalons=state.salons.filter(function(s){return s.type==="hair"||!s.type;});
+  var lashSalons=state.salons.filter(function(s){return s.type==="lash";});
+  var list=state.salonTab==="hair"?hairSalons:lashSalons;
+
+  return e("div",{},[
+    e("div",{className:"sub-tabs"},[
+      e("button",{className:"sub-tab"+(state.salonTab==="hair"?" active":""),onClick:function(){setState({salonTab:"hair"});}},["💇🏻‍♀️ 剪髮沙龍"]),
+      e("button",{className:"sub-tab"+(state.salonTab==="lash"?" active":""),onClick:function(){setState({salonTab:"lash"});}},["💫 美睫沙龍"]),
+    ]),
+    e("div",{className:"sec-hdr"},[
+      e("button",{className:"add-rec-btn",onClick:function(){openModal("salon",null);}},["＋ 新增沙龍"]),
+    ]),
+    list.length===0?e("div",{className:"empty"},[e("div",{className:"empty-icon"},["⭐"]),e("div",{className:"empty-text"},["還沒有沙龍資訊"])]):
+    e("div",{},list.map(function(s){
+      var stars=e("div",{className:"stars"},
+        [1,2,3,4,5].map(function(i){return e("span",{className:"star"+(i<=s.rating?" on":"")},["★"]);}));
+      return e("div",{className:"salon-card"},[
+        e("div",{style:{display:"flex",justifyContent:"space-between"}},[
+          e("div",{},[e("div",{className:"salon-name"},[s.name]),stars]),
+          e("button",{style:{background:"none",border:"none",color:"#c4a898",fontSize:"18px"},onClick:function(){
+            state.salons=state.salons.filter(function(x){return x.id!==s.id;});
+            save("salons",state.salons);setState({});
+          }},["×"]),
+        ]),
+        s.phone?e("div",{className:"salon-info"},["📞 "+s.phone]):null,
+        s.address?e("div",{className:"salon-info"},["📍 "+s.address]):null,
+        s.note?e("div",{style:{fontSize:"12px",color:"#b09080",marginTop:"5px"}},[s.note]):null,
+      ]);
+    })),
+  ]);
+}
+
+// ── MODALS ────────────────────────────────────────────────────────────────────
+function openModal(type, date){
+  var draft={date:date||todayStr()};
+  if(type==="hair") setState({modal:"hair", hairDraft:{selectedItems:[],customItems:[],cost:"",date:date||todayStr(),note:""}});
+  else if(type==="lash") setState({modal:"lash", lashDraft:{item:"150根",cost:"",date:date||todayStr(),note:""}});
+  else if(type==="reminder") setState({modal:"reminder", reminderDraft:{type:"hair",label:"",date:""}});
+  else if(type==="salon") setState({modal:"salon", salonDraft:{type:state.salonTab,name:"",phone:"",address:"",note:"",rating:5}});
+}
+
+function renderModal(){
+  if(!state.modal) return null;
+  var bg=e("div",{className:"modal-bg",onClick:function(){setState({modal:null});}});
+
+  var content;
+  var modal=e("div",{className:"modal",onClick:function(ev){ev.stopPropagation();}});
+
+  if(state.modal==="hair"){
+    var d=state.hairDraft;
+    var chips=HAIR_ITEMS.map(function(item){
+      var sel=(d.selectedItems||[]).indexOf(item)>=0;
+      var chip=e("button",{className:"item-chip"+(sel?" sel":""),onClick:function(){
+        var items=d.selectedItems.slice();
+        var idx=items.indexOf(item);
+        if(idx>=0) items.splice(idx,1); else items.push(item);
+        state.hairDraft.selectedItems=items; setState({});
+      }},[item]);
+      return chip;
+    });
+    var customInput=e("input",{type:"text",placeholder:"自訂項目（Enter新增）",style:{width:"calc(100% - 44px)",border:"1.5px solid #e8d5c4",borderRadius:"10px",padding:"9px 12px",fontSize:"14px",background:"#fff8f3",color:"#4a2e1a"}});
+    customInput.addEventListener("keydown",function(ev){
+      if(ev.key==="Enter"&&customInput.value.trim()){
+        state.hairDraft.customItems=(state.hairDraft.customItems||[]).concat([customInput.value.trim()]);
+        customInput.value=""; setState({});
+      }
+    });
+    var customRow=e("div",{style:{display:"flex",gap:"8px",alignItems:"center",marginTop:"8px"}},[
+      customInput,
+      e("button",{style:{width:"36px",height:"36px",borderRadius:"50%",border:"none",background:"#c0845a",color:"#fff",fontSize:"22px",flexShrink:"0"},onClick:function(){
+        if(customInput.value.trim()){
+          state.hairDraft.customItems=(state.hairDraft.customItems||[]).concat([customInput.value.trim()]);
+          customInput.value=""; setState({});
+        }
+      }},["+"]),
+    ]);
+    var customTags=(d.customItems||[]).map(function(item,i){
+      return e("span",{className:"tag",style:{marginTop:"4px"}},[
+        item,
+        e("button",{style:{background:"none",border:"none",cursor:"pointer",color:"#8b6045",fontSize:"14px",lineHeight:"1",padding:"0",marginLeft:"4px"},onClick:function(){
+          state.hairDraft.customItems=d.customItems.filter(function(_,idx){return idx!==i;});setState({});
+        }},["×"]),
+      ]);
+    });
+
+    modal.appendChild(e("div",{className:"modal-title"},[
+      "💇🏻‍♀️ 新增剪髮紀錄",
+      e("button",{className:"modal-close",onClick:function(){setState({modal:null});}},["×"]),
+    ]));
+    modal.appendChild(e("div",{className:"field"},[
+      e("label",{},[""]),
+      e("div",{className:"item-grid"},chips),
+      customRow,
+      customTags.length?e("div",{style:{display:"flex",flexWrap:"wrap",marginTop:"4px"}},customTags):null,
+    ]));
+    modal.appendChild(e("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"10px",marginBottom:"14px"}},[
+      e("div",{className:"field",style:{marginBottom:"0"}},[e("label",{},["費用（元）"]),e("input",{type:"number",placeholder:"0",value:d.cost||"",onInput:function(ev){state.hairDraft.cost=ev.target.value;},style:{width:"100%",border:"1.5px solid #e8d5c4",borderRadius:"10px",padding:"9px 12px",fontSize:"14px",background:"#fff8f3",color:"#4a2e1a"}})]),
+      e("div",{className:"field",style:{marginBottom:"0"}},[e("label",{},["日期"]),e("input",{type:"date",value:d.date||todayStr(),onChange:function(ev){state.hairDraft.date=ev.target.value;},style:{width:"100%",border:"1.5px solid #e8d5c4",borderRadius:"10px",padding:"9px 12px",fontSize:"14px",background:"#fff8f3",color:"#4a2e1a"}})]),
+    ]));
+    modal.appendChild(e("div",{className:"field"},[e("label",{},["備註"]),e("textarea",{placeholder:"記錄心得…",onInput:function(ev){state.hairDraft.note=ev.target.value;},style:{width:"100%",border:"1.5px solid #e8d5c4",borderRadius:"10px",padding:"9px 12px",fontSize:"14px",background:"#fff8f3",color:"#4a2e1a",resize:"vertical",minHeight:"60px"}})]));
+    modal.appendChild(e("button",{className:"save-btn",onClick:function(){
+      var rec=Object.assign({id:Date.now()},state.hairDraft);
+      state.hairRecords=[rec].concat(state.hairRecords);
+      save("hair",state.hairRecords);
+      setState({modal:null});
+    }},["儲存紀錄"]));
+  }
+
+  else if(state.modal==="lash"){
+    var d=state.lashDraft;
+    modal.appendChild(e("div",{className:"modal-title"},[
+      "💫 新增美睫紀錄",
+      e("button",{className:"modal-close",onClick:function(){setState({modal:null});}},["×"]),
+    ]));
+    modal.appendChild(e("div",{className:"field"},[
+      e("div",{style:{display:"flex",gap:"10px"}},LASH_ITEMS.map(function(item){
+        var btn=e("button",{style:{flex:"1",padding:"10px 0",borderRadius:"14px",fontSize:"14px",border:(d.item===item?"2px solid #c0845a":"2px solid #e8d5c4"),
+          background:d.item===item?"#f5e6d8":"#fff",color:d.item===item?"#8b6045":"#9a7560",fontWeight:d.item===item?"700":"400"},
+          onClick:function(){state.lashDraft.item=item;setState({});}
+        },[item]);
+        return btn;
+      })),
+    ]));
+    modal.appendChild(e("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"10px",marginBottom:"14px"}},[
+      e("div",{className:"field",style:{marginBottom:"0"}},[e("label",{},["費用（元）"]),e("input",{type:"number",placeholder:"0",value:d.cost||"",onInput:function(ev){state.lashDraft.cost=ev.target.value;},style:{width:"100%",border:"1.5px solid #e8d5c4",borderRadius:"10px",padding:"9px 12px",fontSize:"14px",background:"#fff8f3",color:"#4a2e1a"}})]),
+      e("div",{className:"field",style:{marginBottom:"0"}},[e("label",{},["日期"]),e("input",{type:"date",value:d.date||todayStr(),onChange:function(ev){state.lashDraft.date=ev.target.value;},style:{width:"100%",border:"1.5px solid #e8d5c4",borderRadius:"10px",padding:"9px 12px",fontSize:"14px",background:"#fff8f3",color:"#4a2e1a"}})]),
+    ]));
+    modal.appendChild(e("div",{className:"field"},[e("label",{},["備註"]),e("textarea",{placeholder:"記錄心得…",onInput:function(ev){state.lashDraft.note=ev.target.value;},style:{width:"100%",border:"1.5px solid #e8d5c4",borderRadius:"10px",padding:"9px 12px",fontSize:"14px",background:"#fff8f3",color:"#4a2e1a",resize:"vertical",minHeight:"60px"}})]));
+    modal.appendChild(e("button",{className:"save-btn",onClick:function(){
+      var rec=Object.assign({id:Date.now()},state.lashDraft);
+      state.lashRecords=[rec].concat(state.lashRecords);
+      save("lash",state.lashRecords);
+      setState({modal:null});
+    }},["儲存紀錄"]));
+  }
+
+  else if(state.modal==="reminder"){
+    var d=state.reminderDraft;
+    modal.appendChild(e("div",{className:"modal-title"},[
+      "⏰ 自訂提醒",
+      e("button",{className:"modal-close",onClick:function(){setState({modal:null});}},["×"]),
+    ]));
+    modal.appendChild(e("div",{className:"field"},[e("label",{},["提醒名稱"]),e("input",{type:"text",placeholder:"例：預約護髮",value:d.label||"",onInput:function(ev){state.reminderDraft.label=ev.target.value;},style:{width:"100%",border:"1.5px solid #e8d5c4",borderRadius:"10px",padding:"9px 12px",fontSize:"14px",background:"#fff8f3",color:"#4a2e1a"}})]));
+    modal.appendChild(e("div",{className:"field"},[e("label",{},["類型"]),
+      e("div",{style:{display:"flex",gap:"10px"}},["hair","lash"].map(function(t){
+        return e("button",{style:{flex:"1",padding:"8px 0",borderRadius:"12px",fontSize:"13px",border:(d.type===t?"2px solid #c0845a":"2px solid #e8d5c4"),
+          background:d.type===t?"#f5e6d8":"#fff",color:d.type===t?"#8b6045":"#9a7560",fontWeight:d.type===t?"700":"400"},
+          onClick:function(){state.reminderDraft.type=t;setState({});}
+        },[t==="hair"?"✂️ 剪髮":"💫 美睫"]);
+      })),
+    ]));
+    modal.appendChild(e("div",{className:"field"},[e("label",{},["提醒日期"]),e("input",{type:"date",value:d.date||"",onChange:function(ev){state.reminderDraft.date=ev.target.value;},style:{width:"100%",border:"1.5px solid #e8d5c4",borderRadius:"10px",padding:"9px 12px",fontSize:"14px",background:"#fff8f3",color:"#4a2e1a"}})]));
+    modal.appendChild(e("button",{className:"save-btn",onClick:function(){
+      var rec=Object.assign({id:Date.now()},state.reminderDraft);
+      state.reminders=state.reminders.concat([rec]);
+      save("reminders",state.reminders);
+      setState({modal:null});
+    }},["儲存提醒"]));
+  }
+
+  else if(state.modal==="salon"){
+    var d=state.salonDraft;
+    modal.appendChild(e("div",{className:"modal-title"},[
+      (d.type==="hair"?"💇🏻‍♀️":"💫")+" 新增沙龍",
+      e("button",{className:"modal-close",onClick:function(){setState({modal:null});}},["×"]),
+    ]));
+    modal.appendChild(e("div",{className:"field"},[e("label",{},["名稱 *"]),e("input",{type:"text",placeholder:"沙龍或設計師名稱",value:d.name||"",onInput:function(ev){state.salonDraft.name=ev.target.value;},style:{width:"100%",border:"1.5px solid #e8d5c4",borderRadius:"10px",padding:"9px 12px",fontSize:"14px",background:"#fff8f3",color:"#4a2e1a"}})]));
+    modal.appendChild(e("div",{className:"field"},[e("label",{},["評分"]),
+      e("div",{className:"stars"},
+        [1,2,3,4,5].map(function(i){
+          return e("span",{className:"star"+(i<=(d.rating||5)?" on":""),style:{cursor:"pointer"},onClick:function(){state.salonDraft.rating=i;setState({});}},["★"]);
+        })
+      ),
+    ]));
+    modal.appendChild(e("div",{className:"field"},[e("label",{},["電話"]),e("input",{type:"tel",placeholder:"02-xxxx-xxxx",value:d.phone||"",onInput:function(ev){state.salonDraft.phone=ev.target.value;},style:{width:"100%",border:"1.5px solid #e8d5c4",borderRadius:"10px",padding:"9px 12px",fontSize:"14px",background:"#fff8f3",color:"#4a2e1a"}})]));
+    modal.appendChild(e("div",{className:"field"},[e("label",{},["地址"]),e("input",{type:"text",placeholder:"台北市…",value:d.address||"",onInput:function(ev){state.salonDraft.address=ev.target.value;},style:{width:"100%",border:"1.5px solid #e8d5c4",borderRadius:"10px",padding:"9px 12px",fontSize:"14px",background:"#fff8f3",color:"#4a2e1a"}})]));
+    modal.appendChild(e("div",{className:"field"},[e("label",{},["備註"]),e("textarea",{placeholder:"設計師名字、喜好…",onInput:function(ev){state.salonDraft.note=ev.target.value;},style:{width:"100%",border:"1.5px solid #e8d5c4",borderRadius:"10px",padding:"9px 12px",fontSize:"14px",background:"#fff8f3",color:"#4a2e1a",resize:"vertical",minHeight:"56px"}})]));
+    modal.appendChild(e("button",{className:"save-btn",onClick:function(){
+      if(!state.salonDraft.name.trim()) return;
+      var rec=Object.assign({id:Date.now()},state.salonDraft);
+      state.salons=state.salons.concat([rec]);
+      save("salons",state.salons);
+      setState({modal:null});
+    }},["儲存沙龍"]));
+  }
+
+  bg.appendChild(modal);
+  return bg;
+}
+
+// ── CSV Export ────────────────────────────────────────────────────────────────
+function exportCSV(){
+  var rows=["類型,項目,日期,費用,備註"];
+  state.hairRecords.forEach(function(r){
+    var items=(r.selectedItems||[]).concat(r.customItems||[]).join("、");
+    rows.push(["剪髮",'"'+items+'"',r.date,r.cost||0,'"'+(r.note||"")+'"'].join(","));
+  });
+  state.lashRecords.forEach(function(r){
+    rows.push(["美睫",'"'+(r.item||"")+'"',r.date,r.cost||0,'"'+(r.note||"")+'"'].join(","));
+  });
+  var blob=new Blob(["\uFEFF"+rows.join("\n")],{type:"text/csv;charset=utf-8;"});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement("a");a.href=url;a.download="HairLashStory.csv";a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ── MAIN RENDER ───────────────────────────────────────────────────────────────
+function render(){
+  var app=document.getElementById("app");
+  while(app.firstChild) app.removeChild(app.firstChild);
+
+  app.appendChild(renderHeader());
+
+  var content=e("div",{className:"content"});
+  if(state.tab==="calendar") content.appendChild(renderCalendar());
+  else if(state.tab==="hair") content.appendChild(renderRecordList("hair"));
+  else if(state.tab==="lash") content.appendChild(renderRecordList("lash"));
+  else if(state.tab==="stats") content.appendChild(renderStats());
+  else if(state.tab==="reminders") content.appendChild(renderReminders());
+  else if(state.tab==="salons") content.appendChild(renderSalons());
+  app.appendChild(content);
+
+  // FAB for hair/lash tabs
+  if(state.tab==="hair"||state.tab==="lash"||state.tab==="calendar"){
+    var fab=e("button",{className:"fab",onClick:function(){openModal(state.tab==="lash"?"lash":"hair",todayStr());}},["＋"]);
+    app.appendChild(fab);
+  }
+
+  app.appendChild(renderNav());
+
+  var modal=renderModal();
+  if(modal) app.appendChild(modal);
+}
+
+render();
+</script>
+</body>
+</html>
